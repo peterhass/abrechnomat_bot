@@ -49,21 +49,13 @@ defmodule AbrechnomatBot.CommandReceiver do
 
       AbrechnomatBot.CommandReceiver.Parser.parse(update)
       |> case do
-        {:ok, :handle_payment, blubb} ->
-          Logger.debug(inspect(blubb))
-        _ ->
+        {:ok, command, options} ->
+          AbrechnomatBot.Commands.command(command, options)
+
+        parsed ->
+          Logger.debug("Unable to process command: #{inspect(parsed)}")
           nil
       end
-
-
-      #DienerHansBot.CommandReceiver.Parser.parse_update(update)
-      #|> case do
-      #  {:ok, :schedule_reminder, reminder} ->
-      #    DienerHansBot.ReminderClock.schedule_reminder(reminder)
-
-      #  _ ->
-      #    nil
-      #end
 
       {:ok, update_id}
     end
