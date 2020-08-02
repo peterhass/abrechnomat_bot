@@ -26,13 +26,19 @@ defmodule AbrechnomatBot.Commands.BillStats do
             |> Enum.map(&transaction_text/1)
             |> Enum.join("\n")
 
+          total = Map.values(user_sums) |> Enum.reduce(Money.new(0, :EUR), &Money.add(&2, &1))
+
           # FIXME: may not make sense for the user
           sums_message =
-            user_sums
+            user_balances 
             |> Enum.map(&user_sum_text/1)
             |> Enum.join("\n")
 
-          [sums_message, transaction_message]
+          [
+            "Total: #{total}", 
+            sums_message, 
+            transaction_message
+          ]
           |> Enum.join("\n\n")
           |> reply(chat_id, message_id)
       end
@@ -48,7 +54,11 @@ defmodule AbrechnomatBot.Commands.BillStats do
   end
 
   defp user_sum_text({username, amount}) do
-    "@#{username}: #{amount}"
+    if Money.positive?(amount) do
+      "@#{username} owes #{amount} to the group"
+    else
+      "the group owes @#{username} #{amount}"
+    end
   end
 
   defp transaction_text({from_user, to_user, amount}) do
