@@ -3,12 +3,12 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
         ^
         \s*
         (
-          (?<user>@[A-z0-9]+)
-          \s
+          (?<user>@[A-z0-9_]+)
+          \s*
         )?
         (?<amount>[0-9]*([\.|\,][0-9]*)?)
-        (\s?EUR|€)?\s
-        (?<text>.*)
+        (\s*EUR|€)?
+        (\s*(?<text>.*))?
       }x
 
   def parse({
@@ -27,7 +27,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     %{
       chat_id: chat_id,
       date: DateTime.from_unix!(date),
-      amount: normalize_amount(amount),
+      amount: parse_amount(amount),
       user: user |> normalize_user |> clear_empty_string,
       text: text,
       from_id: from_id,
@@ -39,8 +39,8 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     Regex.replace(~r/^@/, user, "")
   end
 
-  defp normalize_amount(amount) do
-    String.replace(amount, ",", ".")
+  defp parse_amount(amount) do
+    Money.parse!(amount, :EUR, separator: ".", delimiter: ",")
   end
 
   defp clear_empty_string(""), do: nil

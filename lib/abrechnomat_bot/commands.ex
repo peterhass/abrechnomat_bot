@@ -1,6 +1,15 @@
 defmodule AbrechnomatBot.Commands do
-  def command(%Nadia.Model.Update{ message: %{ text: "/add_payment" <> text }} = update) do
-    AbrechnomatBot.Commands.HandlePayment.command({text, update})
+  alias __MODULE__.{
+    HandlePayment, 
+    BillStats
+  }
+
+  def command(%Nadia.Model.Update{message: %{text: "/add_payment" <> text}} = update) do
+    HandlePayment.command({text, update})
+  end
+
+  def command(%Nadia.Model.Update{message: %{text: "/bill_stats" <> text}} = update) do
+    BillStats.command({text, update})
   end
 
   def command(%Nadia.Model.Update{}) do
