@@ -47,15 +47,7 @@ defmodule AbrechnomatBot.CommandReceiver do
         {"[#{__MODULE__}] Process update: #{inspect(update)}", [update_id: update_id]}
       end)
 
-      AbrechnomatBot.CommandReceiver.Parser.parse(update)
-      |> case do
-        {:ok, command, options} ->
-          AbrechnomatBot.Commands.command(command, options)
-
-        parsed ->
-          Logger.debug("Unable to process command: #{inspect(parsed)}")
-          nil
-      end
+      AbrechnomatBot.Commands.command(update)
 
       {:ok, update_id}
     end
