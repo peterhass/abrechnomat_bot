@@ -15,6 +15,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
         message_text,
         %Nadia.Model.Update{
           message: %{
+            message_id: message_id, 
             date: date,
             chat: %{id: chat_id},
             from: %{id: from_id, username: from_username}
@@ -25,6 +26,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       Regex.named_captures(@handle_payment_regex, message_text)
 
     %{
+      message_id: message_id, 
       chat_id: chat_id,
       date: DateTime.from_unix!(date),
       amount: parse_amount(amount),
