@@ -7,7 +7,8 @@ defmodule AbrechnomatBot.MixProject do
       version: "0.1.0",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -30,4 +31,11 @@ defmodule AbrechnomatBot.MixProject do
       {:money, "~> 1.7.0"}
     ]
   end
+
+  defp aliases do
+    [
+      "db.create": ["amnesia.create -d AbrechnomatBot.Database --disk"]
+    ]
+  end
+
 end
