@@ -11,11 +11,12 @@ defmodule Abrechnomat.Billing do
     Enum.reduce(payments, %{}, reducer)
   end
 
+  def transactions(user_balances) when map_size(user_balances) <= 1 do
+    []
+  end
+
   def transactions(user_balances) do
-    %{true: creditors, false: debitors} =
-      user_balances
-      |> Enum.sort_by(fn {_, amount} -> amount end)
-      |> Enum.group_by(fn {_, amount} -> Money.negative?(amount) end)
+    {creditors, debitors} = get_user_balances_groups(user_balances)
 
     transactions(
       List.pop_at(debitors, 0),
@@ -43,6 +44,18 @@ defmodule Abrechnomat.Billing do
 
   def transactions({nil, []}, {nil, []}) do
     []
+  end
+
+  defp get_user_balances_groups(user_balances) do
+    groups =
+      user_balances
+      |> Enum.sort_by(fn {_, amount} -> amount end)
+      |> Enum.group_by(fn {_, amount} -> Money.negative?(amount) end)
+
+    creditors = Map.get(groups, true, [])
+    debitors = Map.get(groups, false, [])
+
+    {creditors, debitors}
   end
 
   # TODO: rename

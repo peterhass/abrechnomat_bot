@@ -6,9 +6,9 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
           (?<user>@[A-z0-9_]+)
           \s*
         )?
-        (?<amount>[0-9]*([\.|\,][0-9]*)?)
-        (\s*EUR|€)?
-        (\s*(?<text>.*))?
+        (?<amount>[0-9]*([\.|\,][0-9]*)?)\s*
+        (EUR|€)?\s*
+        (?<text>.*)?
       }x
 
   def parse({
