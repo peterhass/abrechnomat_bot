@@ -1,5 +1,5 @@
 defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
-  @handle_payment_regex ~r{
+  @handle_payment_regex ~r"
         ^
         \s*
         (
@@ -10,7 +10,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
         (\((?<own_share>[0-9]{1,2})%?\))?\s*
         (EUR|€)?\s*
         (?<text>.*)?
-      }x
+      "x
 
   def parse({
         message_text,

@@ -50,6 +50,6 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
   end
 
   defp payment_message_share(%Payment{amount: amount, own_share: own_share}) do
-    "own share: #{own_share}% = #{Money.multiply(amount, own_share)}",
+    "own share: #{own_share}% = #{Money.multiply(amount, own_share)}"
   end
 end
