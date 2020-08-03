@@ -7,6 +7,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
           \s*
         )?
         (?<amount>[0-9]*([\.|\,][0-9]*)?)\s*
+        (\((?<own_share>[0-9]{1,2})%?\))?\s*
         (EUR|€)?\s*
         (?<text>.*)?
       }x
@@ -22,7 +23,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
           }
         }
       }) do
-    %{"amount" => amount, "user" => user, "text" => text} =
+    %{"amount" => amount, "own_share" => own_share, "user" => user, "text" => text} =
       Regex.named_captures(@handle_payment_regex, message_text)
 
     %{
@@ -30,11 +31,19 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       chat_id: chat_id,
       date: DateTime.from_unix!(date),
       amount: parse_amount(amount),
+      own_share: parse_share(own_share),
       user: user |> normalize_user |> clear_empty_string,
       text: text,
       from_id: from_id,
       from_username: from_username
     }
+  end
+
+  defp parse_share(""), do: nil
+
+  defp parse_share(share) do
+  # TODO: error handling
+    String.to_integer(share, 10) / 100
   end
 
   defp normalize_user(user) do

@@ -17,11 +17,12 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
         from_username: from_username,
         date: date,
         amount: amount,
+        own_share: own_share,
         text: text
       }) do
     Amnesia.transaction do
       Bill.find_or_create_by_chat(chat_id)
-      |> Bill.add_payment(user || from_username, date, amount, text)
+      |> Bill.add_payment(user || from_username, date, amount, own_share, text)
       |> payment_message
       |> reply(chat_id, message_id)
     end
@@ -31,14 +32,24 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
   end
 
-  def payment_message(%Payment{user: user, date: date, amount: amount, text: text}) do
+  def payment_message(%Payment{user: user, date: date, amount: amount, text: text} = payment) do
     [
       "Added following payment ...",
       "@#{user}",
       "#{date}",
       "#{amount}",
+      payment_message_share(payment),
       "Text: #{text}"
     ]
+    |> Enum.reject(&is_nil/1)
     |> Enum.join("\n")
+  end
+
+  defp payment_message_share(%Payment{amount: amount, own_share: own_share}) when is_nil(own_share) do
+    nil
+  end
+
+  defp payment_message_share(%Payment{amount: amount, own_share: own_share}) do
+    "own share: #{own_share}% = #{Money.multiply(amount, own_share)}",
   end
 end

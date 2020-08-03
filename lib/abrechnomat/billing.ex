@@ -1,4 +1,5 @@
 defmodule Abrechnomat.Billing do
+  # TODO: handle own_share attribute
   def sums_by_user(payments) do
     reducer = fn payment, acc ->
       sum =

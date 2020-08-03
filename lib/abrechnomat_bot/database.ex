@@ -1,7 +1,7 @@
 use Amnesia
 
 defdatabase AbrechnomatBot.Database do
-  deftable Payment, [{:id, autoincrement}, :bill_id, :user, :date, :amount, :text], type: :ordered_set, index: [:bill_id] do
+  deftable Payment, [{:id, autoincrement}, :bill_id, :user, :date, :amount, :own_share, :text], type: :ordered_set, index: [:bill_id] do
     def by_bill(bill_id) do
       case Payment.read_at(bill_id, :bill_id) do
         nil -> []
@@ -28,8 +28,8 @@ defdatabase AbrechnomatBot.Database do
       end
     end
 
-    def add_payment(self, user, date, amount, text) do
-      payment = %Payment{bill_id: self.id, user: user, date: date, amount: amount, text: text}
+    def add_payment(self, user, date, amount, own_share, text) do
+      payment = %Payment{bill_id: self.id, user: user, date: date, amount: amount, own_share: own_share, text: text}
       IO.puts("[DB] add_payment #{inspect(payment, pretty: true)}") # TODO: remove
       payment |> Payment.write()
     end
