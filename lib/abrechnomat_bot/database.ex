@@ -32,6 +32,14 @@ defdatabase AbrechnomatBot.Database do
       end
     end
 
+    def delete_with_payments(bill_id) do
+      # TODO: error handling
+      Payment.by_bill(bill_id) 
+      |> Enum.each(fn %{id: id} -> Payment.delete(id) end)
+      
+      Bill.delete(bill_id)
+    end
+
     def find_by_chat(chat_id) do
       case Bill.read_at(chat_id, :chat_id) do
         nil -> nil

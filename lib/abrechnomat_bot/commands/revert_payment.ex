@@ -6,7 +6,11 @@ defmodule AbrechnomatBot.Commands.RevertPayment do
   def command(args) do
     args
     |> parse
-    |> execute
+    |> case do
+      # TODO
+      :error -> nil
+      parsed -> execute(parsed)
+    end
   end
 
   def execute({payment_id, chat_id, message_id}) do
@@ -24,11 +28,16 @@ defmodule AbrechnomatBot.Commands.RevertPayment do
     end
   end
 
-  defp parse({text, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
-    payment_id = text
-      |> String.trim
-      |> String.to_integer # TODO: error handling
-    {payment_id, chat_id, message_id}
+  defp parse(
+         {text, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}
+       ) do
+    text
+    |> String.trim()
+    |> Integer.parse()
+    |> case do
+      :error -> :error
+      {payment_id, _} -> {payment_id, chat_id, message_id}
+    end
   end
 
   defp reply(text, chat_id, message_id) do
