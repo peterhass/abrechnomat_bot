@@ -10,6 +10,8 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     |> execute
   end
 
+  # TODO: print usage if something went wrong during parsing
+
   def execute(%{
         chat_id: chat_id,
         message_id: message_id,

@@ -26,6 +26,8 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     %{"amount" => amount, "own_share" => own_share, "user" => user, "text" => text} =
       Regex.named_captures(@handle_payment_regex, message_text)
 
+    # TODO: return :error if amount is missing or there where big problems with parsing
+
     %{
       message_id: message_id, 
       chat_id: chat_id,

@@ -22,5 +22,5 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 abrechnomat_bot-*.tar
 
-/config/local.exs
 /Mnesia.*
+/.env.local
