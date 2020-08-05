@@ -26,7 +26,7 @@ defmodule AbrechnomatBot.Commands.BillStats do
           transactions = Billing.transactions(user_balances)
 
           transaction_message =
-            Abrechnomat.Billing.transactions(user_balances)
+            transactions
             |> Enum.map(&transaction_text/1)
             |> Enum.join("\n")
 
@@ -36,7 +36,6 @@ defmodule AbrechnomatBot.Commands.BillStats do
             |> Enum.join("\n")
 
           [
-            "=== STATUS",
             sums_message, 
             transaction_message
           ]

@@ -32,9 +32,10 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
   end
 
-  def payment_message(%Payment{user: user, date: date, amount: amount, text: text} = payment) do
+  def payment_message(%Payment{id: id, user: user, date: date, amount: amount, text: text} = payment) do
     [
       "Added following payment ...",
+      "ID: #{id}",
       "@#{user}",
       "#{date}",
       "#{amount}",
@@ -45,7 +46,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     |> Enum.join("\n")
   end
 
-  defp payment_message_share(%Payment{amount: amount, own_share: own_share}) when is_nil(own_share) do
+  defp payment_message_share(%Payment{amount: _, own_share: own_share}) when is_nil(own_share) do
     nil
   end
 

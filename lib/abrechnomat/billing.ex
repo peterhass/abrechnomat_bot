@@ -98,7 +98,7 @@ defmodule Abrechnomat.Billing do
     |> MapSet.to_list
 
     Enum.reduce(ast, %{}, fn
-      {:all, {user, amount}}, acc ->
+      {:all, {_, amount}}, acc ->
         users
         |> Stream.zip(Money.divide(amount, Enum.count(users)))
         |> Enum.into(%{})
