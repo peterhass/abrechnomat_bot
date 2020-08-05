@@ -8,6 +8,17 @@ defdatabase AbrechnomatBot.Database do
         payments -> payments
       end
     end
+
+    def delete_by(bill_id: bill_id, payment_id: payment_id) do
+      case Payment.read(payment_id) do
+        nil -> {:error, :not_found}
+        payment -> 
+          case payment do
+            %{bill_id: ^bill_id} -> Payment.delete(payment_id)
+            _ -> {:error, :wrong_bill}
+          end
+      end
+    end
   end
 
   deftable Bill, [{:id, autoincrement}, :chat_id], type: :ordered_set, index: [:chat_id] do
