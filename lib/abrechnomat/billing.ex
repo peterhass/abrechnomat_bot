@@ -72,25 +72,60 @@ defmodule Abrechnomat.Billing do
     end
   end
 
-  # returns user and how much he needs to receive (positive number) or pay (negative number)
-  # peter => +300 EUR  - has to pay other people 300 eur
-  # hans => -20 EUR - needs to receive 20 eur
-  def balances_by_user(user_sums) do
-    total = Map.values(user_sums) |> Enum.reduce(Money.new(0, :EUR), &Money.add(&2, &1))
 
-    # TODO: should be flexible (not everybody pays the same percentage)
-    users = Map.keys(user_sums)
-
-    shares =
-      users
-      |> Stream.zip(Money.divide(total, Enum.count(users)))
-      |> Enum.into(%{})
-
-    Enum.map(user_sums, fn {username, balance} ->
-      diff = Money.subtract(balance, shares[username])
+  def balances_by_user(user_sums, user_shares) do
+    Enum.map(user_sums, fn {username, sum} ->
+      diff = Money.subtract(sum, user_shares[username])
              |> Money.multiply(-1) # TODO: refactor
       {username, diff}
     end)
     |> Enum.into(%{})
+  end
+
+  def user_sums_from_ast(ast) do
+    Enum.reduce(ast, %{}, fn {_, {user, amount}}, acc ->
+      Map.new([{user, amount}])
+      |> Enum.into(%{})
+      |> Map.merge(acc, &map_merge_money_add/3)
+    end)
+  end
+
+  def user_shares_from_ast(ast) do
+    users = Enum.reduce(ast, MapSet.new, fn {_, {user, _}}, acc ->
+      MapSet.put(acc, user)
+    end)
+    |> MapSet.to_list
+
+    Enum.reduce(ast, %{}, fn
+      {:all, {user, amount}}, acc ->
+        users
+        |> Stream.zip(Money.divide(amount, Enum.count(users)))
+        |> Enum.into(%{})
+        |> Map.merge(acc, &map_merge_money_add/3)
+
+      {:all_but, {user, amount}}, acc ->
+        users
+        |> Enum.reject(& &1 == user)
+        |> Stream.zip(Money.divide(amount, Enum.count(users) - 1))
+        |> Enum.into(%{})
+        |> Map.merge(acc, &map_merge_money_add/3)
+
+    end)
+  end
+
+  def map_merge_money_add(_k, value1, value2) do
+    Money.add(value1, value2)
+  end
+
+  def payment_to_ast(payments) when is_list(payments) do
+    Enum.map(payments, &payment_to_ast/1)
+  end
+
+  def payment_to_ast(%{amount: amount, own_share: own_share, user: user}) when is_nil(own_share) do
+    {:all, {user, amount}}
+  end
+
+  def payment_to_ast(%{amount: amount, own_share: own_share, user: user}) do
+    {:all_but, {user, Money.multiply(amount, 1 - own_share)}}
   end
 end
