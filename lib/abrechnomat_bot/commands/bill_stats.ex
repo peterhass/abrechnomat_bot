@@ -2,6 +2,7 @@ defmodule AbrechnomatBot.Commands.BillStats do
   require Amnesia
   require Amnesia.Helper
   alias AbrechnomatBot.Database.{Bill, Payment}
+  alias Abrechnomat.Billing
 
   def command(args) do
     args
@@ -18,24 +19,24 @@ defmodule AbrechnomatBot.Commands.BillStats do
         %{id: bill_id} ->
           payments = Payment.by_bill(bill_id)
 
-          user_sums = Abrechnomat.Billing.sums_by_user(payments)
-          user_balances = Abrechnomat.Billing.balances_by_user(user_sums)
+          ast = Billing.payment_to_ast(payments)
+          user_shares = Billing.user_shares_from_ast(ast)
+          user_sums = Billing.user_sums_from_ast(ast)
+          user_balances = Billing.balances_by_user(user_sums, user_shares)
+          transactions = Billing.transactions(user_balances)
 
           transaction_message =
             Abrechnomat.Billing.transactions(user_balances)
             |> Enum.map(&transaction_text/1)
             |> Enum.join("\n")
 
-          total = Map.values(user_sums) |> Enum.reduce(Money.new(0, :EUR), &Money.add(&2, &1))
-
-          # FIXME: may not make sense for the user
           sums_message =
             user_balances 
             |> Enum.map(&user_sum_text/1)
             |> Enum.join("\n")
 
           [
-            "Total: #{total}", 
+            "=== STATUS",
             sums_message, 
             transaction_message
           ]
