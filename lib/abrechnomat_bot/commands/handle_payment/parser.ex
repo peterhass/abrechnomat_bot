@@ -26,8 +26,6 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     %{"amount" => amount, "own_share" => own_share, "user" => user, "text" => text} =
       Regex.named_captures(@handle_payment_regex, message_text)
 
-    IO.inspect(Regex.named_captures(@handle_payment_regex, message_text))
-
     %{
       message_id: message_id, 
       chat_id: chat_id,
