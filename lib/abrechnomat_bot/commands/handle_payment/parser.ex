@@ -26,7 +26,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     %{"amount" => amount, "own_share" => own_share, "user" => user, "text" => text} =
       Regex.named_captures(@handle_payment_regex, message_text)
 
-    # TODO: return :error if amount is missing or there where big problems with parsing
+    IO.inspect(Regex.named_captures(@handle_payment_regex, message_text))
 
     %{
       message_id: message_id, 
@@ -39,13 +39,33 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       from_id: from_id,
       from_username: from_username
     }
+    |> transform_errors
   end
+
+  defp transform_errors(%{amount: :error, own_share: :error} = parsed) do
+    {:error, :amount_and_own_share_invalid, parsed}
+  end
+
+  defp transform_errors(%{amount: :error} = parsed) do
+    {:error, :amount_invalid, parsed}
+  end
+
+  defp transform_errors(%{own_share: :error} = parsed) do
+    {:error, :amount_invalid, parsed}
+  end
+
+  defp transform_errors(parsed) do
+    {:ok, parsed}
+  end
+
 
   defp parse_share(""), do: nil
 
   defp parse_share(share) do
-  # TODO: error handling
-    String.to_integer(share, 10) / 100
+    case Integer.parse(share, 10) do
+      :error -> :error
+      {num, _} -> num / 100
+    end
   end
 
   defp normalize_user(user) do
@@ -53,7 +73,10 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
   end
 
   defp parse_amount(amount) do
-    Money.parse!(amount, :EUR, separator: ".", delimiter: ",")
+    case Money.parse(amount, :EUR, separator: ".", delimiter: ",") do
+      {:ok, money} -> money
+      :error -> :error
+    end
   end
 
   defp clear_empty_string(""), do: nil

@@ -28,7 +28,8 @@ defmodule AbrechnomatBot.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:nadia, "~> 0.7.0"},
       {:amnesia, "~> 0.2.7"},
-      {:money, "~> 1.7.0"}
+      {:money, "~> 1.7.0"},
+      {:phoenix_html, "~> 2.14.2"}
     ]
   end
 
