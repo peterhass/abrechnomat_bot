@@ -25,10 +25,15 @@ defdatabase AbrechnomatBot.Database do
     def find_or_create_by_chat(chat_id) do
       case find_by_chat(chat_id) do
         nil ->
-          %Bill{chat_id: chat_id}
+          IO.puts("creating bill")
+          new_bill = %Bill{chat_id: chat_id}
+          IO.inspect(new_bill)
+          new_bill
           |> Bill.write()
 
-        bill -> bill
+        bill -> 
+          IO.puts("found bill #{inspect(bill)}")
+          bill
       end
     end
 

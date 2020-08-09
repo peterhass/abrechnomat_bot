@@ -27,7 +27,10 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
         text: text
       }}) do
     Amnesia.transaction do
-      Bill.find_or_create_by_chat(chat_id)
+      bill = Bill.find_or_create_by_chat(chat_id)
+      IO.puts("I AM HERE!! 1")
+
+      bill
       |> Bill.add_payment(user || from_username, date, amount, own_share, text)
       |> payment_message
       |> reply(chat_id, message_id)
