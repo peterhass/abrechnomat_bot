@@ -22,6 +22,10 @@ defmodule AbrechnomatBot.Commands do
     CloseBill.command({text, update})
   end
 
+  def command(%Nadia.Model.Update{callback_query: %{data: "/close_bill" <> text}} = update) do
+    CloseBill.command_callback({text, update})
+  end
+
   def command(%Nadia.Model.Update{}) do
     {:error, :noop}
   end
