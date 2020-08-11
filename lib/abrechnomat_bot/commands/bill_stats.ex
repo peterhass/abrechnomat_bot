@@ -31,12 +31,12 @@ defmodule AbrechnomatBot.Commands.BillStats do
             |> Enum.join("\n")
 
           sums_message =
-            user_balances 
+            user_balances
             |> Enum.map(&user_sum_text/1)
             |> Enum.join("\n")
 
           [
-            sums_message, 
+            sums_message,
             transaction_message
           ]
           |> Enum.join("\n\n")

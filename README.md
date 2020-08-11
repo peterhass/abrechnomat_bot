@@ -19,3 +19,11 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/abrechnomat_bot](https://hexdocs.pm/abrechnomat_bot).
 
+
+## Deployment
+
+# https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145
+
+- ssh into server
+- `git clone https://github.com/peterhass/abrechnomat_bot.git`
+- `MIX_ENV=prod mix deps.get && mix release`

@@ -25,7 +25,7 @@ defmodule AbrechnomatBot.MixProject do
   defp deps do
     [
       {:nadia, "~> 0.7.0"},
-      {:jason, "~> 1.1"}, # needed for nadia??
+      {:jason, "~> 1.1"}, # needed for nadia
       {:amnesia, "~> 0.2.7"},
       {:money, "~> 1.7.0"},
       {:phoenix_html, "~> 2.14.2"}
