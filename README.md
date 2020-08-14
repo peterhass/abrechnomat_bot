@@ -22,7 +22,7 @@ be found at [https://hexdocs.pm/abrechnomat_bot](https://hexdocs.pm/abrechnomat_
 
 ## Deployment
 
-# https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145
+Maybe helpful: [How to depoy phoenix application on ubuntu](https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145)
 
 - ssh into server
 - `git clone https://github.com/peterhass/abrechnomat_bot.git`

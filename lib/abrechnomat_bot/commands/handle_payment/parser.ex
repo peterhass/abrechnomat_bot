@@ -2,40 +2,71 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
   @handle_payment_regex ~r"
         ^
         \s*
-        (
-          (?<user>@[A-z0-9_]+)
-          \s*
-        )?
         (?<amount>[0-9]*([\.|\,][0-9]*)?)\s*
         (\((?<own_share>[0-9]{1,2})%?\))?\s*
         (EUR|€)?\s*
         (?<text>.*)?
       "x
 
+  def get_target_user(text, [
+    %{type: "bot_command", length: _},
+    %{type: "text_mention", length: mention_length, offset: mention_offset, user: user}
+  ]) do
+    remaining_text = text
+    |> String.slice((mention_offset + mention_length)..String.length(text))
+
+    [remaining_text, user]
+  end
+
+  def get_target_user(text, [
+    %{type: "bot_command", length: _},
+    %{type: "mention", length: mention_length, offset: mention_offset}
+  ]) do
+    remaining_text = text
+    |> String.slice((mention_offset + mention_length)..String.length(text))
+
+    username = text
+    |> String.slice(mention_offset..(mention_offset+mention_length-1))
+
+    [remaining_text, %{ username: username }]
+  end
+
+  def get_target_user(text, [
+    %{type: "bot_command", length: command_length}
+    | _
+  ]) do
+    remaining_text = text
+    |> String.slice(command_length..String.length(text))
+
+    [remaining_text, nil]
+  end
+
   def parse({
-        message_text,
+        _,
         %Nadia.Model.Update{
           message: %{
-            message_id: message_id, 
+            entities: entities, 
+            message_id: message_id,
             date: date,
             chat: %{id: chat_id},
-            from: %{id: from_id, username: from_username}
+            from: from_user,
+            text: message_text
           }
         }
       }) do
-    %{"amount" => amount, "own_share" => own_share, "user" => user, "text" => text} =
-      Regex.named_captures(@handle_payment_regex, message_text)
+    [remaining_text, user] = get_target_user(message_text, entities)
+
+    %{"amount" => amount, "own_share" => own_share, "text" => text} =
+      Regex.named_captures(@handle_payment_regex, remaining_text)
 
     %{
-      message_id: message_id, 
+      message_id: message_id,
       chat_id: chat_id,
       date: DateTime.from_unix!(date),
       amount: parse_amount(amount),
       own_share: parse_share(own_share),
-      user: user |> normalize_user |> clear_empty_string,
-      text: text,
-      from_id: from_id,
-      from_username: from_username
+      user: user || from_user,
+      text: text
     }
     |> transform_errors
   end
@@ -56,7 +87,6 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     {:ok, parsed}
   end
 
-
   defp parse_share(""), do: nil
 
   defp parse_share(share) do
@@ -66,17 +96,10 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     end
   end
 
-  defp normalize_user(user) do
-    Regex.replace(~r/^@/, user, "")
-  end
-
   defp parse_amount(amount) do
     case Money.parse(amount, :EUR, separator: ".", delimiter: ",") do
       {:ok, money} -> money
       :error -> :error
     end
   end
-
-  defp clear_empty_string(""), do: nil
-  defp clear_empty_string(str), do: str
 end
