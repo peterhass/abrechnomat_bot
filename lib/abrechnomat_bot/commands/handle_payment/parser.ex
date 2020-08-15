@@ -8,39 +8,6 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
         (?<text>.*)?
       "x
 
-  def get_target_user(text, [
-    %{type: "bot_command", length: _},
-    %{type: "text_mention", length: mention_length, offset: mention_offset, user: user}
-  ]) do
-    remaining_text = text
-    |> String.slice((mention_offset + mention_length)..String.length(text))
-
-    [remaining_text, user]
-  end
-
-  def get_target_user(text, [
-    %{type: "bot_command", length: _},
-    %{type: "mention", length: mention_length, offset: mention_offset}
-  ]) do
-    remaining_text = text
-    |> String.slice((mention_offset + mention_length)..String.length(text))
-
-    username = text
-    |> String.slice(mention_offset..(mention_offset+mention_length-1))
-
-    [remaining_text, %{ username: username }]
-  end
-
-  def get_target_user(text, [
-    %{type: "bot_command", length: command_length}
-    | _
-  ]) do
-    remaining_text = text
-    |> String.slice(command_length..String.length(text))
-
-    [remaining_text, nil]
-  end
-
   def parse({
         _,
         %Nadia.Model.Update{
@@ -69,6 +36,41 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       text: text
     }
     |> transform_errors
+  end
+
+  def get_target_user(text, [
+    %{type: "bot_command", length: _},
+    %{type: "text_mention", length: mention_length, offset: mention_offset, user: user}
+    | _
+  ]) do
+    remaining_text = text
+                     |> String.slice((mention_offset + mention_length)..String.length(text))
+
+    [remaining_text, user]
+  end
+
+  def get_target_user(text, [
+    %{type: "bot_command", length: _},
+    %{type: "mention", length: mention_length, offset: mention_offset}
+    | _
+  ]) do
+    remaining_text = text
+                     |> String.slice((mention_offset + mention_length)..String.length(text))
+
+    username = text
+               |> String.slice(mention_offset..(mention_offset+mention_length-1))
+
+    [remaining_text, %{ username: username }]
+  end
+
+  def get_target_user(text, [
+    %{type: "bot_command", length: command_length}
+    | _
+  ]) do
+    remaining_text = text
+                     |> String.slice(command_length..String.length(text))
+
+    [remaining_text, nil]
   end
 
   defp transform_errors(%{amount: :error, own_share: :error} = parsed) do

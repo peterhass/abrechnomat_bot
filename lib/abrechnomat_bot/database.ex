@@ -1,6 +1,20 @@
 use Amnesia
 
 defdatabase AbrechnomatBot.Database do
+  deftable Migration, [:id, :date], type: :ordered_set do
+    def get_current_version do
+      case Migration.first() do
+        nil -> nil
+        %Migration{id: id} -> id
+      end
+    end
+
+    def set_version(version) do
+      %Migration{id: version, date: NaiveDateTime.utc_now}
+      |> Migration.write
+    end
+  end
+
   deftable Payment, [{:id, autoincrement}, :bill_id, :user, :date, :amount, :own_share, :text], type: :ordered_set, index: [:bill_id] do
     def by_bill(bill_id) do
       case Payment.read_at(bill_id, :bill_id) do
@@ -52,5 +66,9 @@ defdatabase AbrechnomatBot.Database do
       IO.puts("[DB] add_payment #{inspect(payment, pretty: true)}") # TODO: remove
       payment |> Payment.write()
     end
+  end
+
+  deftable User, [:id, :username, :first_name, :last_name], type: :ordered_set, index: [:username] do
+    @type t :: %User{id: Integer.t, username: String.t, first_name: String.t, last_name: String.t}
   end
 end

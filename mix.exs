@@ -17,7 +17,10 @@ defmodule AbrechnomatBot.MixProject do
     [
       extra_applications: [:logger],
       mod: {AbrechnomatBot.Application, []},
-      application: [:nadia, :amnesia]
+      application: [
+        :nadia,
+#        :amnesia
+      ]
     ]
   end
 

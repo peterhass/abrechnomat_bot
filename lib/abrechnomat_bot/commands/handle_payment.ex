@@ -20,7 +20,6 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
         chat_id: chat_id,
         message_id: message_id,
         user: user,
-        from_username: from_username,
         date: date,
         amount: amount,
         own_share: own_share,
@@ -28,7 +27,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
       }}) do
     Amnesia.transaction do
       Bill.find_or_create_by_chat(chat_id)
-      |> Bill.add_payment(user || from_username, date, amount, own_share, text)
+      |> Bill.add_payment(user, date, amount, own_share, text)
       |> payment_message
       |> reply(chat_id, message_id)
     end

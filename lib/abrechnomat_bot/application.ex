@@ -4,11 +4,20 @@ defmodule AbrechnomatBot.Application do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    children = [
-      worker(AbrechnomatBot.CommandReceiver, [])
-    ]
+    case db_migrate() do
+      :ok ->
+        children = [
+          worker(AbrechnomatBot.CommandReceiver, [])
+        ]
 
-    opts = [strategy: :one_for_one, name: AbrechnomatBot.Supervisor]
-    Supervisor.start_link(children, opts)
+        opts = [strategy: :one_for_one, name: AbrechnomatBot.Supervisor]
+        Supervisor.start_link(children, opts)
+      {:error, reason} ->
+        {:error, :migration_error, reason}
+    end
+  end
+
+  defp db_migrate do
+    AbrechnomatBot.Database.Migrations.run()
   end
 end
