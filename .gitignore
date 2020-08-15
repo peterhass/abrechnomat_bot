@@ -24,3 +24,7 @@ abrechnomat_bot-*.tar
 
 /Mnesia.*
 /.env.local
+
+# Ignore idea
+.idea
+/*.iml
