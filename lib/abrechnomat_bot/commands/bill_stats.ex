@@ -21,29 +21,35 @@ defmodule AbrechnomatBot.Commands.BillStats do
           payments = Payment.by_bill(bill_id)
 
           ast = Billing.payment_to_ast(payments)
-          user_shares = Billing.user_shares_from_ast(ast)
-          user_sums = Billing.user_sums_from_ast(ast)
-          user_balances = Billing.balances_by_user(user_sums, user_shares)
-          transactions = Billing.transactions(user_balances)
+          case Billing.user_shares_from_ast(ast) do
+            {:error, reason} ->
+              shares_error_message(reason)
+              |> reply(chat_id, message_id)
 
-          transaction_message =
-            transactions
-            |> transactions_with_resolved_users
-            |> Enum.map(&transaction_text/1)
-            |> Enum.join("\n")
+            user_shares ->
+              user_sums = Billing.user_sums_from_ast(ast)
+              user_balances = Billing.balances_by_user(user_sums, user_shares)
+              transactions = Billing.transactions(user_balances)
 
-          sums_message =
-            user_balances
-            |> user_sums_with_resolved_users
-            |> Enum.map(&user_sum_text/1)
-            |> Enum.join("\n")
+              transaction_message =
+                transactions
+                |> transactions_with_resolved_users
+                |> Enum.map(&transaction_text/1)
+                |> Enum.join("\n")
 
-          [
-            sums_message,
-            transaction_message
-          ]
-          |> Enum.join("\n\n")
-          |> reply(chat_id, message_id)
+              sums_message =
+                user_balances
+                |> user_sums_with_resolved_users
+                |> Enum.map(&user_sum_text/1)
+                |> Enum.join("\n")
+
+              [
+                sums_message,
+                transaction_message
+              ]
+              |> Enum.join("\n\n")
+              |> reply(chat_id, message_id)
+          end
       end
     end
   end
@@ -78,5 +84,9 @@ defmodule AbrechnomatBot.Commands.BillStats do
 
   defp transaction_text({from_user, to_user, amount}) do
     "#{Users.to_short_string(from_user)} -> #{Users.to_short_string(to_user)} : #{amount}"
+  end
+
+  defp shares_error_message(:multiple_users_needed) do
+    "Cannot split a bill around one single user. To 'add' users to the bill, add a payment for 0 amount."
   end
 end

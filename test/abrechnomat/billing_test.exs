@@ -54,23 +54,34 @@ defmodule Abrechnomat.BillingTest do
     assert Billing.user_sums_from_ast(ast) == expected_user_sums
   end
 
-  test "user_shares_from_ast" do
-    ast = [
-      {:all, {@hansi_id, Money.new(2000, :EUR)}},
-      {:all, {@peter_id, Money.new(3000, :EUR)}},
-      {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
-      {:all_but, {@christl_id, Money.new(1000, :EUR)}}
-    ]
-    
-    expected_shares = %{
-      @christl_id => Money.new(6167, :EUR),
-      @hansi_id => Money.new(2166, :EUR),
-      @peter_id => Money.new(6667, :EUR),
-    }
+  describe "user_shares_from_ast" do
+    test "one single user" do
+      ast = [
+        {:all, {@hansi_id, Money.new(2000, :EUR)}},
+        {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
+      ]
 
-    assert Billing.user_shares_from_ast(ast) == expected_shares
+      assert Billing.user_shares_from_ast(ast) == {:error, :multiple_users_needed}
+    end
+
+    test "multiple users" do
+      ast = [
+        {:all, {@hansi_id, Money.new(2000, :EUR)}},
+        {:all, {@peter_id, Money.new(3000, :EUR)}},
+        {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
+        {:all_but, {@christl_id, Money.new(1000, :EUR)}}
+      ]
+
+      expected_shares = %{
+        @christl_id => Money.new(6167, :EUR),
+        @hansi_id => Money.new(2166, :EUR),
+        @peter_id => Money.new(6667, :EUR),
+      }
+
+      assert Billing.user_shares_from_ast(ast) == expected_shares
+    end
   end
-  
+
   test "payment_to_ast" do
     payments = [
       %{user: @hansi, amount: Money.new(2000, :EUR), own_share: nil},
@@ -94,7 +105,7 @@ defmodule Abrechnomat.BillingTest do
       @christina_id => %Money{amount: 1000, currency: :EUR},
       @hansi_id => %Money{amount: 4000, currency: :EUR},
       @herbert_id => %Money{amount: -8000, currency: :EUR},
-      @peter_id => %Money{amount: 3000, currency: :EUR}   
+      @peter_id => %Money{amount: 3000, currency: :EUR}
     }
 
     transactions = Billing.transactions(user_balances)

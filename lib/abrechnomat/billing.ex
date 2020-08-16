@@ -96,6 +96,14 @@ defmodule Abrechnomat.Billing do
     end)
     |> MapSet.to_list
 
+    user_shares_from_ast(ast, users)
+  end
+
+  def user_shares_from_ast(_, [_]) do
+    {:error, :multiple_users_needed}
+  end
+
+  def user_shares_from_ast(ast, users) do
     Enum.reduce(ast, %{}, fn
       {:all, {_, amount}}, acc ->
         users
