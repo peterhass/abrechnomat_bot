@@ -25,8 +25,8 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     arg
   end
 
-  def execute({:error, reason, %{chat_id: chat_id, message_id: message_id}}) do
-    usage
+  def execute({:error, _reason, %{chat_id: chat_id, message_id: message_id}}) do
+    usage()
     |> reply(chat_id, message_id)
   end
 

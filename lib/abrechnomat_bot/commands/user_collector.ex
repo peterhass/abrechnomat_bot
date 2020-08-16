@@ -42,11 +42,11 @@ defmodule AbrechnomatBot.Commands.UserCollector do
     |> Map.values
   end
 
-  def collect_users(%Update{ message: %{ from: nil } = message} = update) do
+  def collect_users(%Update{ message: %{ from: nil }} = update) do
     collect_users(delete_in(update, [:message, :from]))
   end
 
-  def collect_users(%Update{ message: %{ from: user } = message} = update) do
+  def collect_users(%Update{ message: %{ from: user }} = update) do
     [user | collect_users(delete_in(update, [:message, :from]))]
   end
 
