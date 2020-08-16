@@ -103,7 +103,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
                  %{length: 12, offset: 0, type: "bot_command"},
                  %{length: 10, offset: 13, type: "mention"}
                ]
-             ) == [" 54 Lebensmittel", %{username: "@christina"}]
+             ) == [" 54 Lebensmittel", %Nadia.Model.User{username: "@christina"}]
     end
 
     test "return whole user on text mention" do

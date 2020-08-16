@@ -1,8 +1,9 @@
 defmodule AbrechnomatBot.Commands.BillStats do
   require Amnesia
   require Amnesia.Helper
-  alias AbrechnomatBot.Database.{Bill, Payment}
+  alias AbrechnomatBot.Database.{Bill, Payment, User}
   alias Abrechnomat.Billing
+  alias Abrechnomat.Users
 
   def command(args) do
     args
@@ -27,11 +28,13 @@ defmodule AbrechnomatBot.Commands.BillStats do
 
           transaction_message =
             transactions
+            |> transactions_with_resolved_users
             |> Enum.map(&transaction_text/1)
             |> Enum.join("\n")
 
           sums_message =
             user_balances
+            |> user_sums_with_resolved_users
             |> Enum.map(&user_sum_text/1)
             |> Enum.join("\n")
 
@@ -53,15 +56,27 @@ defmodule AbrechnomatBot.Commands.BillStats do
     Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
   end
 
-  defp user_sum_text({username, amount}) do
+  defp transactions_with_resolved_users(transactions) do
+    Enum.map(transactions, fn {from_user_id, to_user_id, amount} ->
+      {User.find(from_user_id), User.find(to_user_id), amount}
+    end)
+  end
+
+  defp user_sums_with_resolved_users(user_sums) do
+    Enum.map(user_sums, fn {user_id, amount} ->
+      {User.find(user_id), amount}
+    end)
+  end
+
+  defp user_sum_text({user, amount}) do
     if Money.positive?(amount) do
-      "@#{username} owes #{amount} to the group"
+      "#{Users.to_short_string(user)} owes #{amount} to the group"
     else
-      "the group owes @#{username} #{amount}"
+      "the group owes #{Users.to_short_string(user)} #{Money.abs(amount)}"
     end
   end
 
   defp transaction_text({from_user, to_user, amount}) do
-    "@#{from_user} -> @#{to_user} : #{amount}"
+    "#{Users.to_short_string(from_user)} -> #{Users.to_short_string(to_user)} : #{amount}"
   end
 end

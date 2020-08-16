@@ -1,5 +1,4 @@
 defmodule Abrechnomat.Billing do
-  # TODO: handle own_share attribute
   def sums_by_user(payments) do
     reducer = fn payment, acc ->
       sum =
@@ -123,10 +122,10 @@ defmodule Abrechnomat.Billing do
   end
 
   def payment_to_ast(%{amount: amount, own_share: own_share, user: user}) when is_nil(own_share) do
-    {:all, {user, amount}}
+    {:all, {user.id, amount}}
   end
 
   def payment_to_ast(%{amount: amount, own_share: own_share, user: user}) do
-    {:all_but, {user, Money.multiply(amount, 1 - own_share)}}
+    {:all_but, {user.id, Money.multiply(amount, 1 - own_share)}}
   end
 end

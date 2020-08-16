@@ -7,6 +7,16 @@ defmodule AbrechnomatBot.Commands do
     UserCollector
   }
 
+#  {
+#"description": "Bad Request: group chat was upgraded to a supergroup chat",
+#"error_code": 400,
+#"ok": false,
+#   "parameters": {
+#   "migrate_to_chat_id": -1001477607310
+#   }
+#   }
+  # TODO: handle "migrate_to_chat_id"
+
   def command(%Nadia.Model.Update{message: %{text: "/add_payment" <> text}} = update) do
     preprocess_update(update)
     HandlePayment.command({text, update})

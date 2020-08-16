@@ -23,7 +23,7 @@ defmodule AbrechnomatBot.Commands.UserCollector do
 
     Amnesia.transaction do
       users
-      |> Enum.map(&struct(User, &1)) # attributes need to stay the same
+      |> Enum.map(&struct(User, Map.from_struct(&1))) # attributes need to stay the same
       |> Enum.each(&User.write/1)
     end
   end
@@ -42,14 +42,22 @@ defmodule AbrechnomatBot.Commands.UserCollector do
     |> Map.values
   end
 
+  def collect_users(%Update{ message: %{ from: nil } = message} = update) do
+    collect_users(delete_in(update, [:message, :from]))
+  end
+
   def collect_users(%Update{ message: %{ from: user } = message} = update) do
     [user | collect_users(delete_in(update, [:message, :from]))]
+  end
+
+  def collect_users(%Update{ message: %{ entities: nil }} = update) do
+    collect_users(delete_in(update, [:message, :entities]))
   end
 
   def collect_users(%Update{ message: %{ entities: entities }} = update) do
     reducer = fn entity, acc ->
       case entity do
-        %{type: "text_mention", user: user} -> [user | acc]
+        %{type: "text_mention", user: user} -> [struct(Nadia.Model.User, user) | acc]
         _ -> acc
       end
     end

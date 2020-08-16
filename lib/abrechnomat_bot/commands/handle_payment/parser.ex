@@ -60,7 +60,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     username = text
                |> String.slice(mention_offset..(mention_offset+mention_length-1))
 
-    [remaining_text, %{ username: username }]
+    [remaining_text, %Nadia.Model.User{ username: username }]
   end
 
   def get_target_user(text, [

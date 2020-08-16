@@ -70,5 +70,16 @@ defdatabase AbrechnomatBot.Database do
 
   deftable User, [:id, :username, :first_name, :last_name], type: :ordered_set, index: [:username] do
     @type t :: %User{id: Integer.t, username: String.t, first_name: String.t, last_name: String.t}
+
+    def find(id) do
+      User.read(id)
+    end
+
+    def find_by_username(username) do
+      case User.read_at(username, :username) do
+        nil -> nil
+        users -> Enum.at(users, 0)
+      end
+    end
   end
 end

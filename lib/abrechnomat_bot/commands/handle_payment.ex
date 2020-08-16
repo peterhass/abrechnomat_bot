@@ -1,14 +1,28 @@
 defmodule AbrechnomatBot.Commands.HandlePayment do
   require Amnesia
   require Amnesia.Helper
-  alias AbrechnomatBot.Database.{Bill, Payment}
+  alias AbrechnomatBot.Database.{Bill, Payment, User}
   alias __MODULE__.Parser
   import Phoenix.HTML
 
   def command(args) do
     args
     |> Parser.parse()
+    |> inject_user
     |> execute
+  end
+
+  def inject_user({:ok, %{ user: user } = options}) do
+    Amnesia.transaction do
+      case full_user_resolve(user) do
+        nil -> {:error, "Unable to find user", options}
+        full_user -> {:ok, put_in(options, [:user], full_user)}
+      end
+    end
+  end
+
+  def inject_user(arg) do
+    arg
   end
 
   def execute({:error, reason, %{chat_id: chat_id, message_id: message_id}}) do
@@ -27,7 +41,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
       }}) do
     Amnesia.transaction do
       Bill.find_or_create_by_chat(chat_id)
-      |> Bill.add_payment(user, date, amount, own_share, text)
+      |> Bill.add_payment(full_user_resolve(user), date, amount, own_share, text)
       |> payment_message
       |> reply(chat_id, message_id)
     end
@@ -52,6 +66,14 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     |> safe_to_string
   end
 
+  defp full_user_resolve(%{ username: username }) when not is_nil(username) do
+    User.find_by_username(username)
+  end
+
+  defp full_user_resolve(%{ id: id }) do
+    User.find(id)
+  end
+
   defp reply(text, chat_id, message_id) do
     Nadia.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
   end
@@ -60,7 +82,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     [
       "Added following payment ...",
       "ID: #{id}",
-      "@#{user}",
+      Abrechnomat.Users.to_short_string(user),
       "#{date}",
       "#{amount}",
       payment_message_share(payment),
