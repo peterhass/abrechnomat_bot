@@ -1,29 +1,28 @@
 # AbrechnomatBot
 
-**TODO: Add description**
+Telegram bot for bill splitting. Supports an unlimited amount of debtors/creditors on a bill. 
+Calculates as little transactions as possible to pay everybody out.
 
-## Installation
+## Usage
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `abrechnomat_bot` to your list of dependencies in `mix.exs`:
+- Add it to a group (works best if you give it admin privileges)
+- Send `/add_payment` see on it should be used
+- `/revert_payment` to remove an added payment
+- Use `/bill_stats` to see the current amount and needed transactions
+- `/close_bill` after all payments are done (new bill starts immediately after that)
 
-```elixir
-def deps do
-  [
-    {:abrechnomat_bot, "~> 0.1.0"}
-  ]
-end
-```
+## Development Setup
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/abrechnomat_bot](https://hexdocs.pm/abrechnomat_bot).
-
+- Create bot in BotFather to get the bot api token
+- `cp .env.example .env.local`
+- Fill in fields in `.env.local`
+- Set up env variables for current session: `source .env.local`
+- Run: `iex -S mix`
 
 ## Deployment
 
-Maybe helpful: [How to depoy phoenix application on ubuntu](https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145)
-
 - ssh into server
 - `git clone https://github.com/peterhass/abrechnomat_bot.git`
-- `MIX_ENV=prod mix deps.get && mix release`
+- `MIX_ENV=prod mix deps.get && MIX_ENV=prod mix release`
+
+Maybe helpful: [How to depoy phoenix application on ubuntu](https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145)
