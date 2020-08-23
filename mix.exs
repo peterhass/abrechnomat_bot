@@ -31,7 +31,8 @@ defmodule AbrechnomatBot.MixProject do
       {:jason, "~> 1.1"}, # needed for nadia
       {:amnesia, "~> 0.2.7"},
       {:money, "~> 1.7.0"},
-      {:phoenix_html, "~> 2.14.2"}
+      {:phoenix_html, "~> 2.14.2"},
+      {:csv, "~> 2.3"}
     ]
   end
 

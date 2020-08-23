@@ -1,10 +1,11 @@
 defmodule AbrechnomatBot.Commands do
+  import AbrechnomatBot.Commands.Helpers
   alias __MODULE__.{
     HandlePayment, 
     RevertPayment,
     BillStats,
-    CloseBill,
-    UserCollector
+    ExportPayments,
+    CloseBill
   }
 
 #  {
@@ -17,37 +18,15 @@ defmodule AbrechnomatBot.Commands do
 #   }
   # TODO: handle "migrate_to_chat_id"
 
-  def command(%Nadia.Model.Update{message: %{text: "/add_payment" <> text}} = update) do
-    preprocess_update(update)
-    HandlePayment.command({text, update})
-  end
-
-  def command(%Nadia.Model.Update{message: %{text: "/revert_payment" <> text}} = update) do
-    preprocess_update(update)
-    RevertPayment.command({text, update})
-  end
-
-  def command(%Nadia.Model.Update{message: %{text: "/bill_stats" <> text}} = update) do
-    preprocess_update(update)
-    BillStats.command({text, update})
-  end
-
-  def command(%Nadia.Model.Update{message: %{text: "/close_bill" <> text}} = update) do
-    preprocess_update(update)
-    CloseBill.command({text, update})
-  end
-
-  def command(%Nadia.Model.Update{callback_query: %{data: "/close_bill" <> text}} = update) do
-    preprocess_update(update)
-    CloseBill.command_callback({text, update})
-  end
+  defcommand HandlePayment, "/add_payment"
+  defcommand RevertPayment, "/revert_payment"
+  defcommand BillStats, "/bill_stats"
+  defcommand CloseBill, "/close_bill"
+  defcallback CloseBill, "/close_bill"
+  defcommand ExportPayments, "/export_payments"
 
   def command(%Nadia.Model.Update{} = update) do
     preprocess_update(update)
     {:error, :noop}
-  end
-
-  defp preprocess_update(update) do
-    UserCollector.process(update)
   end
 end
