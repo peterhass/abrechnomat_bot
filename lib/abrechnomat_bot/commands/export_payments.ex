@@ -1,7 +1,7 @@
 defmodule AbrechnomatBot.Commands.ExportPayments do
   require Amnesia
   require Amnesia.Helper
-  alias AbrechnomatBot.Database.{Bill, Payment, User}
+  alias AbrechnomatBot.Database.{Bill, Payment}
 
   def command(args) do
     args
@@ -9,7 +9,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     |> execute
   end
 
-  def execute({chat_id, message_id} = args) do
+  def execute({chat_id, _} = args) do
     Amnesia.transaction do
       execute_for_bill(Bill.find_by_chat(chat_id), args)
     end
@@ -28,7 +28,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
       payments
       |> Enum.map(&payment_to_line(&1, fields))
 
-    file_path = AbrechnomatBot.TempFiles.get_temp_file(export_file_name)
+    file_path = AbrechnomatBot.TempFiles.get_temp_file(export_file_name())
     file = File.open!(file_path, [:utf8, :write])
 
     try do
@@ -68,7 +68,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     Abrechnomat.Users.to_short_string(user)
   end
 
-  defp format_payment_attribute(key, value) do
+  defp format_payment_attribute(_key, value) do
     to_string(value)
   end
 

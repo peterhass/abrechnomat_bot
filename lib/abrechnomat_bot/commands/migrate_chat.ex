@@ -35,7 +35,7 @@ defmodule AbrechnomatBot.Commands.MigrateChat do
     {:noop, "No action required"}
   end
 
-  defp migrate_chat(nil, new_chat_id) do
+  defp migrate_chat(nil, _) do
     {:noop, "No bill registered for given chat id"}
   end
 
