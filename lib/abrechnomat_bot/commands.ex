@@ -6,18 +6,9 @@ defmodule AbrechnomatBot.Commands do
     RevertPayment,
     BillStats,
     ExportPayments,
-    CloseBill
+    CloseBill,
+    MigrateChat
   }
-
-  #  {
-  # "description": "Bad Request: group chat was upgraded to a supergroup chat",
-  # "error_code": 400,
-  # "ok": false,
-  #   "parameters": {
-  #   "migrate_to_chat_id": -1001477607310
-  #   }
-  #   }
-  # TODO: handle "migrate_to_chat_id"
 
   defcommand(HandlePayment, "/add_payment")
   defcommand(RevertPayment, "/revert_payment")
@@ -28,6 +19,8 @@ defmodule AbrechnomatBot.Commands do
 
   def command(%Nadia.Model.Update{} = update) do
     preprocess_update(update)
+    MigrateChat.process(update)
+
     {:error, :noop}
   end
 end
