@@ -43,6 +43,7 @@ defmodule AbrechnomatBot.Commands.CloseBill do
 
         %{id: bill_id} ->
           # TODO: extract parts
+          AbrechnomatBot.Commands.ExportPayments.execute({chat_id, message_id})
           AbrechnomatBot.Commands.BillStats.execute({chat_id, message_id})
 
           case Bill.delete_with_payments(bill_id) do

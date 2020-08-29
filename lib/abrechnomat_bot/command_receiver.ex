@@ -77,6 +77,15 @@ defmodule AbrechnomatBot.CommandReceiver do
     {:noreply, new_state}
   end
 
+  # Workaround for issue with http lib used by nadia
+  # No idea why this happens
+  # AbrechnomatBot.CommandReceiver.handle_info({:ssl_closed, {:sslsocket, {:gen_tcp, #Port<0.8>, :tls_connection, :undefined}, [#PID<0.377.0>, #PID<0.376.0>]}}, %{last_update_id: nil})
+  def handle_info(args, state) do
+    Logger.debug("Handle info called with foreign arguments: #{inspect(args, pretty: true)}")
+
+    {:noreply, state}
+  end
+
   defp schedule_poll() do
     Process.send_after(self(), :poll, 1_000)
   end
