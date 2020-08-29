@@ -27,7 +27,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
       payments
       |> Enum.map(&payment_to_line(&1, fields))
 
-    file_path = AbrechnomatBot.TempFiles.generate_file_path
+    file_path = AbrechnomatBot.TempFiles.get_temp_file(export_file_name)
     file = File.open!(file_path, [:utf8, :write])
 
     try do
@@ -66,11 +66,6 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     Abrechnomat.Users.to_short_string(user)
   end
 
-  defp format_payment_attribute(:amount, amount) do
-    # TODO: check if needed
-    Money.to_string(amount)
-  end
-
   defp format_payment_attribute(key, value) do
     to_string(value)
   end
@@ -81,5 +76,11 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
 
   defp reply(text, chat_id, message_id) do
     Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
+  end
+
+  defp export_file_name do
+    date = DateTime.utc_now
+
+    "export-#{date.year}-#{date.month}-#{date.day}_#{date.hour}-#{date.minute}.csv"
   end
 end

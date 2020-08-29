@@ -1,7 +1,7 @@
 defmodule AbrechnomatBot.TempFiles do
-  def generate_file_path do
+  def get_temp_file(suffix) do
     System.tmp_dir!()
-    |> Path.join(random_string())
+    |> Path.join("#{random_string()}-#{suffix}")
   end
 
   defp random_string do
