@@ -12,6 +12,7 @@ defmodule AbrechnomatBot.Application do
 
         opts = [strategy: :one_for_one, name: AbrechnomatBot.Supervisor]
         Supervisor.start_link(children, opts)
+
       {:error, reason} ->
         {:error, :migration_error, reason}
     end

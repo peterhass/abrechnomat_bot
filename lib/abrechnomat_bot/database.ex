@@ -10,12 +10,14 @@ defdatabase AbrechnomatBot.Database do
     end
 
     def set_version(version) do
-      %Migration{id: version, date: NaiveDateTime.utc_now}
-      |> Migration.write
+      %Migration{id: version, date: NaiveDateTime.utc_now()}
+      |> Migration.write()
     end
   end
 
-  deftable Payment, [{:id, autoincrement}, :bill_id, :user, :date, :amount, :own_share, :text], type: :ordered_set, index: [:bill_id] do
+  deftable Payment, [{:id, autoincrement}, :bill_id, :user, :date, :amount, :own_share, :text],
+    type: :ordered_set,
+    index: [:bill_id] do
     def by_bill(bill_id) do
       case Payment.read_at(bill_id, :bill_id) do
         nil -> []
@@ -25,8 +27,10 @@ defdatabase AbrechnomatBot.Database do
 
     def delete_by(bill_id: bill_id, payment_id: payment_id) do
       case Payment.read(payment_id) do
-        nil -> {:error, :not_found}
-        payment -> 
+        nil ->
+          {:error, :not_found}
+
+        payment ->
           case payment do
             %{bill_id: ^bill_id} -> Payment.delete(payment_id)
             _ -> {:error, :wrong_bill}
@@ -42,15 +46,16 @@ defdatabase AbrechnomatBot.Database do
           %Bill{chat_id: chat_id}
           |> Bill.write()
 
-        bill -> bill
+        bill ->
+          bill
       end
     end
 
     def delete_with_payments(bill_id) do
       # TODO: error handling
-      Payment.by_bill(bill_id) 
+      Payment.by_bill(bill_id)
       |> Enum.each(fn %{id: id} -> Payment.delete(id) end)
-      
+
       Bill.delete(bill_id)
     end
 
@@ -62,14 +67,28 @@ defdatabase AbrechnomatBot.Database do
     end
 
     def add_payment(self, user, date, amount, own_share, text) do
-      payment = %Payment{bill_id: self.id, user: user, date: date, amount: amount, own_share: own_share, text: text}
-      IO.puts("[DB] add_payment #{inspect(payment, pretty: true)}") # TODO: remove
+      payment = %Payment{
+        bill_id: self.id,
+        user: user,
+        date: date,
+        amount: amount,
+        own_share: own_share,
+        text: text
+      }
+
+      # TODO: remove
+      IO.puts("[DB] add_payment #{inspect(payment, pretty: true)}")
       payment |> Payment.write()
     end
   end
 
   deftable User, [:id, :username, :first_name, :last_name], type: :ordered_set, index: [:username] do
-    @type t :: %User{id: Integer.t, username: String.t, first_name: String.t, last_name: String.t}
+    @type t :: %User{
+            id: Integer.t(),
+            username: String.t(),
+            first_name: String.t(),
+            last_name: String.t()
+          }
 
     def find(id) do
       User.read(id)

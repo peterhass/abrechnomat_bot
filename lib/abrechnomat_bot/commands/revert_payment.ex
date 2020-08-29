@@ -33,14 +33,13 @@ defmodule AbrechnomatBot.Commands.RevertPayment do
   defp usage do
     cmd_usage = "/revert_payment [id]"
     text = "Use ID from bot's response to /add_payment"
-    
+
     ~E"""
     <code><%= cmd_usage %></code>
     <%= text %>
     """
     |> safe_to_string
   end
-
 
   defp parse(
          {text, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}
@@ -53,7 +52,6 @@ defmodule AbrechnomatBot.Commands.RevertPayment do
       {payment_id, _} -> {:ok, {payment_id, chat_id, message_id}}
     end
   end
-
 
   defp reply(text, chat_id, message_id) do
     Nadia.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")

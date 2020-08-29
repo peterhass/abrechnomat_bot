@@ -44,13 +44,21 @@ defmodule AbrechnomatBot.CommandReceiver do
 
     def process_update(%{update_id: update_id} = update) do
       Logger.debug(fn ->
-        {"[#{__MODULE__}] Process update: #{inspect(update, pretty: true)}", [update_id: update_id]}
+        {"[#{__MODULE__}] Process update: #{inspect(update, pretty: true)}",
+         [update_id: update_id]}
       end)
 
       try do
         AbrechnomatBot.Commands.command(update)
       rescue
-        err -> Logger.log :error, "[#{__MODULE__}] Failed at processing update #{inspect([err: err, update: update], pretty: true)}", [update_id: update_id]
+        err ->
+          Logger.log(
+            :error,
+            "[#{__MODULE__}] Failed at processing update #{
+              inspect([err: err, update: update], pretty: true)
+            }",
+            update_id: update_id
+          )
       end
 
       {:ok, update_id}

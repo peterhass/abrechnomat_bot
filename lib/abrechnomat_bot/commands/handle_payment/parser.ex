@@ -12,7 +12,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
         _,
         %Nadia.Model.Update{
           message: %{
-            entities: entities, 
+            entities: entities,
             message_id: message_id,
             date: date,
             chat: %{id: chat_id},
@@ -39,36 +39,40 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
   end
 
   def get_target_user(text, [
-    %{type: "bot_command", length: _},
-    %{type: "text_mention", length: mention_length, offset: mention_offset, user: user}
-    | _
-  ]) do
-    remaining_text = text
-                     |> String.slice((mention_offset + mention_length)..String.length(text))
+        %{type: "bot_command", length: _},
+        %{type: "text_mention", length: mention_length, offset: mention_offset, user: user}
+        | _
+      ]) do
+    remaining_text =
+      text
+      |> String.slice((mention_offset + mention_length)..String.length(text))
 
     [remaining_text, user]
   end
 
   def get_target_user(text, [
-    %{type: "bot_command", length: _},
-    %{type: "mention", length: mention_length, offset: mention_offset}
-    | _
-  ]) do
-    remaining_text = text
-                     |> String.slice((mention_offset + mention_length)..String.length(text))
+        %{type: "bot_command", length: _},
+        %{type: "mention", length: mention_length, offset: mention_offset}
+        | _
+      ]) do
+    remaining_text =
+      text
+      |> String.slice((mention_offset + mention_length)..String.length(text))
 
-    username = text
-               |> String.slice(mention_offset..(mention_offset+mention_length-1))
+    username =
+      text
+      |> String.slice(mention_offset..(mention_offset + mention_length - 1))
 
-    [remaining_text, %Nadia.Model.User{ username: username }]
+    [remaining_text, %Nadia.Model.User{username: username}]
   end
 
   def get_target_user(text, [
-    %{type: "bot_command", length: command_length}
-    | _
-  ]) do
-    remaining_text = text
-                     |> String.slice(command_length..String.length(text))
+        %{type: "bot_command", length: command_length}
+        | _
+      ]) do
+    remaining_text =
+      text
+      |> String.slice(command_length..String.length(text))
 
     [remaining_text, nil]
   end

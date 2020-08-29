@@ -4,38 +4,37 @@ defmodule Abrechnomat.BillingTest do
   alias AbrechnomatBot.Database.User
 
   @christl_id 1
-  @christl %User{ id: @christl_id, username: "christl" }
+  @christl %User{id: @christl_id, username: "christl"}
   @peter_id 2
-  @peter %User{ id: @peter_id, username: "peter" }
+  @peter %User{id: @peter_id, username: "peter"}
   @hansi_id 3
-  @hansi %User{ id: @hansi_id, username: "hansi" }
+  @hansi %User{id: @hansi_id, username: "hansi"}
   @christina_id 4
-  @christina %User{ id: @christina_id, username: "christina" }
+  @christina %User{id: @christina_id, username: "christina"}
   @herbert_id 9
-  @herbert %User{ id: @herbert_id, username: "herbert" }
+  @herbert %User{id: @herbert_id, username: "herbert"}
 
   test "balances_by_user" do
     user_sums = %{
       @christl_id => Money.new(1000, :EUR),
       @peter_id => Money.new(3000, :EUR),
-      @hansi_id => Money.new(11000, :EUR),
+      @hansi_id => Money.new(11000, :EUR)
     }
 
     user_shares = %{
       @christl_id => Money.new(6167, :EUR),
       @peter_id => Money.new(6666, :EUR),
-      @hansi_id => Money.new(2167, :EUR),
+      @hansi_id => Money.new(2167, :EUR)
     }
 
     expected_user_balances = %{
       @christl_id => Money.new(5167, :EUR),
       @peter_id => Money.new(3666, :EUR),
-      @hansi_id => Money.new(-8833, :EUR),
+      @hansi_id => Money.new(-8833, :EUR)
     }
 
     assert Billing.balances_by_user(user_sums, user_shares) == expected_user_balances
   end
-
 
   test "user_sums_from_ast" do
     ast = [
@@ -44,11 +43,11 @@ defmodule Abrechnomat.BillingTest do
       {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
       {:all_but, {@christl_id, Money.new(1000, :EUR)}}
     ]
-    
+
     expected_user_sums = %{
       @christl_id => Money.new(1000, :EUR),
       @peter_id => Money.new(3000, :EUR),
-      @hansi_id => Money.new(11000, :EUR),
+      @hansi_id => Money.new(11000, :EUR)
     }
 
     assert Billing.user_sums_from_ast(ast) == expected_user_sums
@@ -58,7 +57,7 @@ defmodule Abrechnomat.BillingTest do
     test "one single user" do
       ast = [
         {:all, {@hansi_id, Money.new(2000, :EUR)}},
-        {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
+        {:all_but, {@hansi_id, Money.new(9000, :EUR)}}
       ]
 
       assert Billing.user_shares_from_ast(ast) == {:error, :multiple_users_needed}
@@ -75,7 +74,7 @@ defmodule Abrechnomat.BillingTest do
       expected_shares = %{
         @christl_id => Money.new(6167, :EUR),
         @hansi_id => Money.new(2166, :EUR),
-        @peter_id => Money.new(6667, :EUR),
+        @peter_id => Money.new(6667, :EUR)
       }
 
       assert Billing.user_shares_from_ast(ast) == expected_shares
@@ -87,14 +86,14 @@ defmodule Abrechnomat.BillingTest do
       %{user: @hansi, amount: Money.new(2000, :EUR), own_share: nil},
       %{user: @peter, amount: Money.new(3000, :EUR), own_share: nil},
       %{user: @hansi, amount: Money.new(10000, :EUR), own_share: 0.1},
-      %{user: @christl, amount: Money.new(1000, :EUR), own_share: 0},
+      %{user: @christl, amount: Money.new(1000, :EUR), own_share: 0}
     ]
 
     expected_ast = [
-    {:all, {@hansi_id, Money.new(2000, :EUR)}},
-    {:all, {@peter_id, Money.new(3000, :EUR)}},
-    {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
-    {:all_but, {@christl_id, Money.new(1000, :EUR)}}
+      {:all, {@hansi_id, Money.new(2000, :EUR)}},
+      {:all, {@peter_id, Money.new(3000, :EUR)}},
+      {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
+      {:all_but, {@christl_id, Money.new(1000, :EUR)}}
     ]
 
     assert Billing.payment_to_ast(payments) == expected_ast
@@ -125,7 +124,7 @@ defmodule Abrechnomat.BillingTest do
       %{user: @herbert, amount: Money.new(10000, :EUR), own_share: nil},
       %{user: @christina, amount: Money.new(1000, :EUR), own_share: nil},
       %{user: @herbert, amount: Money.new(3000, :EUR), own_share: 0},
-      %{user: @christina, amount: Money.new(6000, :EUR), own_share: 0.5},
+      %{user: @christina, amount: Money.new(6000, :EUR), own_share: 0.5}
     ]
 
     ast = Billing.payment_to_ast(payments)

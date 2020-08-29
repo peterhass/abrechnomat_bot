@@ -23,38 +23,40 @@ defmodule AbrechnomatBot.Commands.UserCollector do
 
     Amnesia.transaction do
       users
-      |> Enum.map(&struct(User, Map.from_struct(&1))) # attributes need to stay the same
+      # attributes need to stay the same
+      |> Enum.map(&struct(User, Map.from_struct(&1)))
       |> Enum.each(&User.write/1)
     end
   end
 
   def merge_users(users) do
     reducer = fn user, acc ->
-      merged_user = Map.merge(
-        user,
-        Map.get(acc, user.id, %{})
-      )
+      merged_user =
+        Map.merge(
+          user,
+          Map.get(acc, user.id, %{})
+        )
 
       Map.put(acc, user.id, merged_user)
     end
 
     Enum.reduce(users, %{}, reducer)
-    |> Map.values
+    |> Map.values()
   end
 
-  def collect_users(%Update{ message: %{ from: nil }} = update) do
+  def collect_users(%Update{message: %{from: nil}} = update) do
     collect_users(delete_in(update, [:message, :from]))
   end
 
-  def collect_users(%Update{ message: %{ from: user }} = update) do
+  def collect_users(%Update{message: %{from: user}} = update) do
     [user | collect_users(delete_in(update, [:message, :from]))]
   end
 
-  def collect_users(%Update{ message: %{ entities: nil }} = update) do
+  def collect_users(%Update{message: %{entities: nil}} = update) do
     collect_users(delete_in(update, [:message, :entities]))
   end
 
-  def collect_users(%Update{ message: %{ entities: entities }} = update) do
+  def collect_users(%Update{message: %{entities: entities}} = update) do
     reducer = fn entity, acc ->
       case entity do
         %{type: "text_mention", user: user} -> [struct(Nadia.Model.User, user) | acc]

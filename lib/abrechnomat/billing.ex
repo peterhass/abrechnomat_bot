@@ -25,13 +25,13 @@ defmodule Abrechnomat.Billing do
   end
 
   def transactions(
-         {{debitor_key, debitor_amount}, _} = debitor_pair,
-         {{creditor_key, creditor_amount}, _} = creditor_pair
-       ) do
+        {{debitor_key, debitor_amount}, _} = debitor_pair,
+        {{creditor_key, creditor_amount}, _} = creditor_pair
+      ) do
     transaction_amount =
       [debitor_amount, creditor_amount]
       |> Enum.map(&Money.abs/1)
-      |> Enum.min
+      |> Enum.min()
 
     transaction = {debitor_key, creditor_key, transaction_amount}
 
@@ -72,11 +72,13 @@ defmodule Abrechnomat.Billing do
     end
   end
 
-
   def balances_by_user(user_sums, user_shares) do
     Enum.map(user_sums, fn {username, sum} ->
-      diff = Money.subtract(sum, user_shares[username])
-             |> Money.multiply(-1) # TODO: refactor
+      diff =
+        Money.subtract(sum, user_shares[username])
+        # TODO: refactor
+        |> Money.multiply(-1)
+
       {username, diff}
     end)
     |> Enum.into(%{})
@@ -91,10 +93,11 @@ defmodule Abrechnomat.Billing do
   end
 
   def user_shares_from_ast(ast) do
-    users = Enum.reduce(ast, MapSet.new, fn {_, {user, _}}, acc ->
-      MapSet.put(acc, user)
-    end)
-    |> MapSet.to_list
+    users =
+      Enum.reduce(ast, MapSet.new(), fn {_, {user, _}}, acc ->
+        MapSet.put(acc, user)
+      end)
+      |> MapSet.to_list()
 
     user_shares_from_ast(ast, users)
   end
@@ -113,11 +116,10 @@ defmodule Abrechnomat.Billing do
 
       {:all_but, {user, amount}}, acc ->
         users
-        |> Enum.reject(& &1 == user)
+        |> Enum.reject(&(&1 == user))
         |> Stream.zip(Money.divide(amount, Enum.count(users) - 1))
         |> Enum.into(%{})
         |> Map.merge(acc, &map_merge_money_add/3)
-
     end)
   end
 
@@ -129,7 +131,8 @@ defmodule Abrechnomat.Billing do
     Enum.map(payments, &payment_to_ast/1)
   end
 
-  def payment_to_ast(%{amount: amount, own_share: own_share, user: user}) when is_nil(own_share) do
+  def payment_to_ast(%{amount: amount, own_share: own_share, user: user})
+      when is_nil(own_share) do
     {:all, {user.id, amount}}
   end
 

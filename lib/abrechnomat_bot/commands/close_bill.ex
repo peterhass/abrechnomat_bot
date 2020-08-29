@@ -68,9 +68,7 @@ defmodule AbrechnomatBot.Commands.CloseBill do
     {parse_message_text(text), {chat_id, message_id, bot_message_id}}
   end
 
-  defp parse(
-         {_, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}
-       ) do
+  defp parse({_, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
     {:check, {chat_id, message_id}}
   end
 

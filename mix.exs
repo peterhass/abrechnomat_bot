@@ -18,8 +18,8 @@ defmodule AbrechnomatBot.MixProject do
       extra_applications: [:logger],
       mod: {AbrechnomatBot.Application, []},
       application: [
-        :nadia,
-#        :amnesia
+        :nadia
+        #        :amnesia
       ]
     ]
   end
@@ -28,7 +28,8 @@ defmodule AbrechnomatBot.MixProject do
   defp deps do
     [
       {:nadia, "~> 0.7.0"},
-      {:jason, "~> 1.1"}, # needed for nadia
+      # needed for nadia
+      {:jason, "~> 1.1"},
       {:amnesia, "~> 0.2.7"},
       {:money, "~> 1.7.0"},
       {:phoenix_html, "~> 2.14.2"},
@@ -41,5 +42,4 @@ defmodule AbrechnomatBot.MixProject do
       "db.create": ["amnesia.create -d AbrechnomatBot.Database --disk"]
     ]
   end
-
 end

@@ -8,7 +8,9 @@ defmodule AbrechnomatBot.Database.Migrations do
     case db_exists?() do
       true ->
         Amnesia.transaction(&Migration.get_current_version/0)
-      false -> nil
+
+      false ->
+        nil
     end
     |> migration
 
@@ -22,17 +24,17 @@ defmodule AbrechnomatBot.Database.Migrations do
       Migration.set_version("1")
     end
 
-    Database.User.create!
+    Database.User.create!()
 
     migration("1")
   end
 
   def migration(nil) do
     Amnesia.stop()
-    Amnesia.Schema.destroy
-    Amnesia.Schema.create
+    Amnesia.Schema.destroy()
+    Amnesia.Schema.create()
     Amnesia.start()
-    Database.create!([disk: [node()]])
+    Database.create!(disk: [node()])
     :ok = Database.wait(15000)
 
     Amnesia.transaction do

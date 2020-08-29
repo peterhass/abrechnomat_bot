@@ -21,6 +21,7 @@ defmodule AbrechnomatBot.Commands.BillStats do
           payments = Payment.by_bill(bill_id)
 
           ast = Billing.payment_to_ast(payments)
+
           case Billing.user_shares_from_ast(ast) do
             {:error, reason} ->
               shares_error_message(reason)

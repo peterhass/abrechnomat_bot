@@ -23,6 +23,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     payments = Payment.by_bill(bill_id)
 
     fields = ~w(id user date amount own_share text)a
+
     payment_lines =
       payments
       |> Enum.map(&payment_to_line(&1, fields))
@@ -32,8 +33,9 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
 
     try do
       [table_headers(fields) | payment_lines]
-      |> CSV.encode
+      |> CSV.encode()
       |> Enum.each(&IO.write(file, &1))
+
       File.close(file)
 
       Nadia.send_document(chat_id, file_path, reply_to_message_id: message_id)
@@ -62,7 +64,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     end)
   end
 
-  defp format_payment_attribute(:user, user)  do
+  defp format_payment_attribute(:user, user) do
     Abrechnomat.Users.to_short_string(user)
   end
 
@@ -79,7 +81,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
   end
 
   defp export_file_name do
-    date = DateTime.utc_now
+    date = DateTime.utc_now()
 
     "export-#{date.year}-#{date.month}-#{date.day}_#{date.hour}-#{date.minute}.csv"
   end
