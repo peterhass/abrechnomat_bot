@@ -9,11 +9,15 @@ defmodule AbrechnomatBot.Commands.MigrateChat do
     |> execute
   end
 
-  def parse(%Nadia.Model.Update{ message: %{ migrate_from_chat_id: old_chat_id, chat: %{ id: new_chat_id } }}) do
+  def parse(%Nadia.Model.Update{
+        message: %{migrate_from_chat_id: old_chat_id, chat: %{id: new_chat_id}}
+      }) do
     {:ok, {old_chat_id, new_chat_id}}
   end
 
-  def parse(%Nadia.Model.Update{ message: %{ chat: %{ id: old_chat_id }, migrate_to_chat_id: new_chat_id }}) do
+  def parse(%Nadia.Model.Update{
+        message: %{chat: %{id: old_chat_id}, migrate_to_chat_id: new_chat_id}
+      }) do
     {:ok, {old_chat_id, new_chat_id}}
   end
 
@@ -21,7 +25,7 @@ defmodule AbrechnomatBot.Commands.MigrateChat do
     {:error}
   end
 
-  def execute({:ok, { old_chat_id, new_chat_id }}) do
+  def execute({:ok, {old_chat_id, new_chat_id}}) do
     Amnesia.transaction do
       migrate_chat(Bill.find_by_chat(old_chat_id), new_chat_id)
     end
@@ -37,7 +41,7 @@ defmodule AbrechnomatBot.Commands.MigrateChat do
 
   defp migrate_chat(old_chat, new_chat_id) do
     %{old_chat | chat_id: new_chat_id}
-    |> Bill.write
+    |> Bill.write()
 
     {:ok, new_chat_id}
   end
