@@ -42,8 +42,13 @@ defmodule AbrechnomatBot.Database.Migrations do
     case Database.wait(1000) do
       :ok ->
         Amnesia.transaction(&Migration.get_current_version/0)
+
       _ ->
-        IO.puts(:stderr, "Cannot access database, it's either faulty or doesn't exist. Set env variable DB_CREATE to true to setup database on first run.")
+        IO.puts(
+          :stderr,
+          "Cannot access database, it's either faulty or doesn't exist. Set env variable DB_CREATE to true to setup database on first run."
+        )
+
         nil
     end
   end
