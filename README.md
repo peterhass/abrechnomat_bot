@@ -24,5 +24,6 @@ Calculates as little transactions as possible to pay everybody out.
 - ssh into server
 - `git clone https://github.com/peterhass/abrechnomat_bot.git`
 - `MIX_ENV=prod mix deps.get && MIX_ENV=prod mix release`
+- Setup database if needed: `DB_CREATE=true ./bin/abrechnomat_bot start_iex`
 
 Maybe helpful: [How to depoy phoenix application on ubuntu](https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145)

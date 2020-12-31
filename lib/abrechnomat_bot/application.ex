@@ -19,6 +19,9 @@ defmodule AbrechnomatBot.Application do
   end
 
   defp db_migrate do
-    AbrechnomatBot.Database.Migrations.run()
+    case System.get_env("DB_CREATE") do
+      "true" -> AbrechnomatBot.Database.Migrations.create()
+      _ -> AbrechnomatBot.Database.Migrations.run()
+    end
   end
 end
