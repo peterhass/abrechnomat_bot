@@ -10,7 +10,7 @@ jobs:
   build:
 
     name: Build and test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04 # https://github.com/actions/setup-elixir/issues/31
 
     steps:
     - uses: actions/checkout@v2
