@@ -63,7 +63,11 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       text
       |> String.slice(mention_offset..(mention_offset + mention_length - 1))
 
-    [remaining_text, %Nadia.Model.User{username: username}]
+    stripped_username =
+      ~r/^@/
+      |> Regex.replace(username, "")
+
+    [remaining_text, %Nadia.Model.User{username: stripped_username}]
   end
 
   def get_target_user(text, [

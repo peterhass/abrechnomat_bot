@@ -96,14 +96,14 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
              ) == [" 12", nil]
     end
 
-    test "return username on mention" do
+    test "return username on mention (and strip @-prefix)" do
       assert Parser.get_target_user(
                "/add_payment @christina 54 Lebensmittel",
                [
                  %{length: 12, offset: 0, type: "bot_command"},
                  %{length: 10, offset: 13, type: "mention"}
                ]
-             ) == [" 54 Lebensmittel", %Nadia.Model.User{username: "@christina"}]
+             ) == [" 54 Lebensmittel", %Nadia.Model.User{username: "christina"}]
     end
 
     test "return whole user on text mention" do
