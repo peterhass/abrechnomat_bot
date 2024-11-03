@@ -1,7 +1,7 @@
 dest = $$XDG_DATA_HOME/abrechnomat_bot
 
 build:
-	mkdir -p $dest
+	mkdir -p $(dest)
 	podman run \
 		-e MIX_ENV=prod \
 		--mount type=bind,source=./,target=/app \
