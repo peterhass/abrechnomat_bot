@@ -4,14 +4,12 @@ After=network.target
 
 [Service]
 Type=notify
-User=abrechnomat_bot
-Group=abrechnomat_bot
 
 Environment=MIX_ENV=prod
-EnvironmentFile=/etc/abrechnomat_bot
+EnvironmentFile=%E/abrechnomat_bot
 
-WorkingDirectory=/opt/abrechnomat_bot
-ExecStart=/opt/abrechnomat_bot/bin/abrechnomat_bot start
+WorkingDirectory=%D/abrechnomat_bot
+ExecStart=./bin/abrechnomat_bot start
 
 WatchdogSec=1min
 

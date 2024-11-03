@@ -1,6 +1,7 @@
-dest = /opt/abrechnomat_bot
+dest = $$XDG_DATA_HOME/abrechnomat_bot
 
-install:
+build:
+	mkdir -p $dest
 	podman run \
 		-e MIX_ENV=prod \
 		--mount type=bind,source=./,target=/app \
@@ -10,14 +11,17 @@ install:
 		/bin/bash -c "mix deps.get --only $MIX_ENV && mix release --overwrite --path /rel"
 
 service:
-	cp -n ./systemd/abrechnomat_bot.env /etc/abrechnomat_bot || true
-	chmod 640 /etc/abrechnomat_bot
+	mkdir -p ~/.config/systemd/user
+
+	cp -n ./systemd/abrechnomat_bot.env $$XDG_CONFIG_HOME/abrechnomat_bot || true
+	chmod 640 $$XDG_CONFIG_HOME/abrechnomat_bot
 
 	install --mode=664 \
 		./systemd/abrechnomat_bot.service \
-		/etc/systemd/system/
+		$$XDG_CONFIG_HOME/systemd/user/
 
-	systemctl daemon-reload
-	systemctl enable abrechnomat_bot.service
+	systemctl --user daemon-reload
+	systemctl --user enable abrechnomat_bot.service
 
+	echo "Do not forget allow running the service without login: loginctl enable-linger"
 	echo "Restart whenever you're ready: systemctl restart abrechnomat_bot.service"
