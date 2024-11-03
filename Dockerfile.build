@@ -1,4 +1,4 @@
-FROM docker.io/elixir:1.17-alpine as build
+FROM docker.io/elixir:1.17 as build
 
 RUN mkdir -p /app/source
 WORKDIR /app/source
