@@ -56,7 +56,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     examples =
       [
         {"You paid 10 EUR for the group", "/add_payment 10 Pizza"},
-        {"Another person paid 10 EUR for the group", "/add_payment @anotherPerson 10 Drugs"},
+        {"Another person paid 10 EUR for the group", "/add_payment @anotherPerson 10 Seafood"},
         {"You paid something you didn't partake in",
          "/add_payment 10 (0%) Eating pizza without me"}
       ]
