@@ -26,4 +26,4 @@ service:
 	systemctl --user enable abrechnomat_bot.service
 
 	echo "Do not forget allow running the service without login: loginctl enable-linger"
-	echo "Restart whenever you're ready: systemctl restart abrechnomat_bot.service"
+	echo "Restart whenever you're ready: systemctl restart --user abrechnomat_bot.service"

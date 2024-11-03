@@ -6,10 +6,10 @@ After=network.target
 Type=notify
 
 Environment=MIX_ENV=prod
-EnvironmentFile=%E/abrechnomat_bot
+EnvironmentFile=%h/.config/abrechnomat_bot
 
-WorkingDirectory=%D/abrechnomat_bot
-ExecStart=./bin/abrechnomat_bot start
+WorkingDirectory=%h/.local/share/abrechnomat_bot
+ExecStart=%h/.local/share/abrechnomat_bot/bin/abrechnomat_bot start
 
 WatchdogSec=1min
 
