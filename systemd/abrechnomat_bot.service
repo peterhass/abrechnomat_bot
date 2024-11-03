@@ -15,4 +15,7 @@ ExecStart=/opt/abrechnomat_bot/bin/abrechnomat_bot start
 
 WatchdogSec=1min
 
-RestartOn=on-failure
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
