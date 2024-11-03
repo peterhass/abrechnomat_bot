@@ -5,7 +5,7 @@ defmodule AbrechnomatBot.MixProject do
     [
       app: :abrechnomat_bot,
       version: "0.1.0",
-      elixir: "~> 1.10",
+      elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases()
@@ -27,6 +27,8 @@ defmodule AbrechnomatBot.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:systemd, "~> 0.6"},
+
       {:nadia, "~> 0.7.0"},
       # needed for nadia
       {:jason, "~> 1.1"},

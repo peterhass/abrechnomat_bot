@@ -1,0 +1,18 @@
+[Unit]
+Description=abrechnomat_bot
+After=network.target
+
+[Service]
+Type=notify
+User=abrechnomat_bot
+Group=abrechnomat_bot
+
+Environment=MIX_ENV=prod
+EnvironmentFile=/etc/abrechnomat_bot
+
+WorkingDirectory=/opt/abrechnomat_bot
+ExecStart=/opt/abrechnomat_bot/bin/abrechnomat_bot start
+
+WatchdogSec=1min
+
+RestartOn=on-failure

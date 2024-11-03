@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+TMP=$(mktemp -d)
+IMAGE="$TMP/image.tar"
+
+podman build --no-cache \
+	-f Dockerfile.build \
+	-o=type=tar,dest=$IMAGE
+
+mkdir -p _artifacts
+cd _artifacts && tar -xvf "$IMAGE" release.tar.gz
+
+rm -rf "$TMP"

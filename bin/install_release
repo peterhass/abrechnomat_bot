@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+TARGET=/opt/abrechnomat_bot
+
+set -e
+set -x
+
+tar -xvf _artifacts/release.tar.gz -C "$TARGET"
+echo "Ready to restart: systemctl restart abrechnomat_bot.service"

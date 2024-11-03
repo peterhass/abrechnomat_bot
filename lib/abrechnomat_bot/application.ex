@@ -7,7 +7,8 @@ defmodule AbrechnomatBot.Application do
     case db_migrate() do
       :ok ->
         children = [
-          worker(AbrechnomatBot.CommandReceiver, [])
+          worker(AbrechnomatBot.CommandReceiver, []),
+          :systemd.ready() # systemd healthcheck 
         ]
 
         opts = [strategy: :one_for_one, name: AbrechnomatBot.Supervisor]
