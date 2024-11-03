@@ -27,3 +27,9 @@ Calculates as little transactions as possible to pay everybody out.
 - Setup database if needed: `DB_CREATE=true ./bin/abrechnomat_bot start_iex`
 
 Maybe helpful: [How to depoy phoenix application on ubuntu](https://medium.com/3-elm-erlang-elixir/how-to-deploying-phoenix-application-on-ubuntu-293645f38145)
+
+## TODO 
+
+- Nadia is dead. Migrate to https://github.com/visciang/telegram ?
+- Use webhooks instead of polling
+- Respect edited messages?
