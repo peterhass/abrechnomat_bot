@@ -28,6 +28,3 @@ abrechnomat_bot-*.tar
 # Ignore idea
 .idea
 /*.iml
-
-# Release script
-/_artifacts
