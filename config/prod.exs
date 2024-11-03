@@ -1,3 +1,7 @@
 import Config
 
-config :logger, level: :info
+config :logger,
+  backends: [
+    {ExSyslogger, :ex_syslogger_error},
+    {ExSyslogger, :ex_syslogger_debug},
+  ]

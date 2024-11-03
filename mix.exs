@@ -20,7 +20,8 @@ defmodule AbrechnomatBot.MixProject do
       application: [
         :nadia
         #        :amnesia
-      ]
+      ],
+      included_applications: [:ex_syslogger],
     ]
   end
 
@@ -28,6 +29,7 @@ defmodule AbrechnomatBot.MixProject do
   defp deps do
     [
       {:systemd, "~> 0.6"},
+      {:ex_syslogger, "~> 1.5"},
       {:nadia, "~> 0.7.0"},
       # needed for nadia
       {:jason, "~> 1.1"},
