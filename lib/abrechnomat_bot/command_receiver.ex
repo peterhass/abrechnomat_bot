@@ -54,9 +54,7 @@ defmodule AbrechnomatBot.CommandReceiver do
         err ->
           Logger.log(
             :error,
-            "[#{__MODULE__}] Failed at processing update #{
-              inspect([err: err, update: update], pretty: true)
-            }",
+            "[#{__MODULE__}] Failed at processing update #{inspect([err: err, update: update], pretty: true)}",
             update_id: update_id
           )
       end

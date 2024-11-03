@@ -28,7 +28,6 @@ defmodule AbrechnomatBot.MixProject do
   defp deps do
     [
       {:systemd, "~> 0.6"},
-
       {:nadia, "~> 0.7.0"},
       # needed for nadia
       {:jason, "~> 1.1"},

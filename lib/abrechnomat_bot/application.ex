@@ -8,7 +8,8 @@ defmodule AbrechnomatBot.Application do
       :ok ->
         children = [
           worker(AbrechnomatBot.CommandReceiver, []),
-          :systemd.ready() # systemd healthcheck 
+          # systemd healthcheck 
+          :systemd.ready()
         ]
 
         opts = [strategy: :one_for_one, name: AbrechnomatBot.Supervisor]
