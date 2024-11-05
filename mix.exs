@@ -21,7 +21,7 @@ defmodule AbrechnomatBot.MixProject do
         :nadia
         #        :amnesia
       ],
-      included_applications: [:ex_syslogger],
+      included_applications: [:ex_syslogger]
     ]
   end
 
