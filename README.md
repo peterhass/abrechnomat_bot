@@ -31,3 +31,8 @@ Calculates as little transactions as possible to pay everybody out.
 - Nadia is dead. Migrate to https://github.com/visciang/telegram ?
 - Use webhooks instead of polling
 - Respect edited messages?
+- Create pre-filled paypal links for final payment (user needs to configure their paypal account)
+- Create some way to tip bot provider (maybe after closing the bill)
+- Edge-case: Users might join or leave the group while there's an open bill
+- For more advanced use cases: Use telegram bot to link into a web app, authenticate with telegram
+    oauth, leave limitations at home
