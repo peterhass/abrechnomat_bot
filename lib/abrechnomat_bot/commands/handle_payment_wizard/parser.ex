@@ -11,7 +11,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard.Parser do
       :error -> :error
       {num, _} when num > 100 -> :error
       {num, _} when num == 0 -> :error
-      {num, _}  -> {:ok, num / 100}
+      {num, _} -> {:ok, num / 100}
     end
   end
 
@@ -19,7 +19,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard.Parser do
     trimmed = String.trim(text)
 
     case String.length(text) do
-      len when len > 3000 -> {:error, :too_long} # should be able to fit an URL
+      # should be able to fit an URL
+      len when len > 3000 -> {:error, :too_long}
       len when len == 0 -> {:error, :empty}
       _ -> {:ok, trimmed}
     end

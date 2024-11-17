@@ -47,7 +47,6 @@ defmodule AbrechnomatBot.Commands.MessageContextStore do
     {:reply, context, state}
   end
 
-
   @impl true
   def handle_call({:set_value, message_id, module, value, ttl}, _from, state) do
     new_state = StoreImpl.set(state, message_id, module, value)
