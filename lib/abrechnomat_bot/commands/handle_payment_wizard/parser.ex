@@ -5,4 +5,13 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard.Parser do
       :error -> :error
     end
   end
+
+  def parse_share(text) do
+    case Integer.parse(text, 10) do
+      :error -> :error
+      {num, _} when num > 100 -> :error
+      {num, _} when num == 0 -> :error
+      {num, _}  -> {:ok, num / 100}
+    end
+  end
 end

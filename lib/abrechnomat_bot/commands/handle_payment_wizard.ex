@@ -60,7 +60,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
 
       {:ok, money} ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(chat_id, "Split",
+          Nadia.send_message(chat_id, "Own share",
             reply_to_message_id: message_id,
             reply_markup: %Nadia.Model.InlineKeyboardMarkup{
               inline_keyboard: [
@@ -133,11 +133,11 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     Nadia.delete_message(chat_id, message_id)
 
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "Split",
+      Nadia.send_message(chat_id, "Own share",
         reply_to_message_id: origin_message_id,
         reply_markup: %{
           force_reply: true,
-          input_field_placeholder: "33.3%",
+          input_field_placeholder: "33%",
           selective: true
         }
       )
@@ -153,18 +153,43 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         {%ReplyContext{
            step: :custom_split,
            amount: amount,
-           origin_message_id: original_message_id
-         },
+           origin_message_id: origin_message_id
+         } = reply_context,
          %Nadia.Model.Update{
            message: %{
              chat: %{id: chat_id},
+             message_id: message_id,
              text: text
            }
          }}
       ) do
-    # TODO: do the actual work here!!
-    Nadia.send_message(chat_id, "Amount: #{amount}, Split: #{text}",
-      reply_to_message_id: original_message_id
-    )
+    text
+    |> Parser.parse_share()
+    |> case do
+      :error ->
+        {:ok, %{message_id: response_message_id}} =
+          Nadia.send_message(
+            chat_id,
+            "Unable to parse the provided share. Shares cannot have fractions. Try again",
+            reply_to_message_id: message_id,
+            reply_markup: %{
+              force_reply: true,
+              input_field_placeholder: "33%",
+              selective: true
+            }
+          )
+
+        MessageContextStore.set_value(
+          response_message_id,
+          __MODULE__,
+          %ReplyContext{reply_context | step: :custom_split}
+        )
+
+      {:ok, own_share} ->
+        # TODO: do the actual work here!!
+        Nadia.send_message(chat_id, "Amount: #{amount}, Own Share: #{own_share}",
+          reply_to_message_id: origin_message_id
+        )
+    end
   end
 end
