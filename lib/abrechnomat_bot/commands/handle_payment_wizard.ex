@@ -23,24 +23,87 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     {:ok, %{message_id: response_message_id}} =
       Nadia.send_message(chat_id, "Split",
         reply_to_message_id: message_id,
+        reply_markup: %Nadia.Model.InlineKeyboardMarkup{
+          inline_keyboard: [
+            [
+              %{callback_data: "zero", text: "0%"},
+              %{callback_data: "fifty", text: "50%"},
+              %{callback_data: "custom", text: "Custom"}
+            ]
+          ]
+        }
+      )
+
+    MessageContextStore.set_value(
+      response_message_id,
+      __MODULE__,
+      {:split_choice, %{amount: text}}
+    )
+  end
+
+  def reply_command(
+        {{:split_choice, %{amount: amount}},
+         %Nadia.Model.Update{
+           callback_query: %{
+             data: "zero",
+             message: %{
+               message_id: message_id,
+               chat: %{id: chat_id}
+             }
+           }
+         }}
+      ) do
+    # TODO: do the work
+    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 0%", reply_to_message_id: message_id)
+  end
+
+  def reply_command(
+        {{:split_choice, %{amount: amount}},
+         %Nadia.Model.Update{
+           callback_query: %{
+             data: "fifty",
+             message: %{
+               message_id: message_id,
+               chat: %{id: chat_id}
+             }
+           }
+         }}
+      ) do
+    # TODO: do the work
+    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 50%", reply_to_message_id: message_id)
+  end
+
+  def reply_command(
+        {{:split_choice, %{amount: amount}},
+         %Nadia.Model.Update{
+           callback_query: %{
+             data: "custom",
+             message: %{
+               message_id: message_id,
+               chat: %{id: chat_id}
+             }
+           }
+         }}
+      ) do
+    {:ok, %{message_id: response_message_id}} =
+      Nadia.send_message(chat_id, "Split",
+        reply_to_message_id: message_id,
         reply_markup: %{
           force_reply: true,
-          input_field_placeholder: "50%",
+          input_field_placeholder: "33.3%",
           selective: true
         }
       )
 
-    # TODO: needs proper parsing!
-
-    # TODO: add custom keyboards!
-    #   Bot: "Split:" reply with inline keyboard: 100%, 50%, custom
-    #   When custom, bot answers: "Custom amount in percent:" reply with force_reply
-
-    MessageContextStore.set_value(response_message_id, __MODULE__, {:split, %{amount: text}})
+    MessageContextStore.set_value(
+      response_message_id,
+      __MODULE__,
+      {:custom_split, %{amount: amount}}
+    )
   end
 
   def reply_command(
-        {{:split, %{amount: amount}},
+        {{:custom_split, %{amount: amount}},
          %Nadia.Model.Update{
            message: %{
              message_id: message_id,
@@ -49,9 +112,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            }
          }}
       ) do
-
     # TODO: do the actual work here!!
-    Nadia.send_message(chat_id, "Created! #{amount} with split #{text}",
+    Nadia.send_message(chat_id, "Amount: #{amount}, Split: #{text}",
       reply_to_message_id: message_id
     )
   end

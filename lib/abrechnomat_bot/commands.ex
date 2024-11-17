@@ -40,8 +40,19 @@ defmodule AbrechnomatBot.Commands do
     reply(context, update)
   end
 
+  defp process_reply(
+         %Nadia.Model.Update{
+           callback_query: %{message: %{message_id: reply_to_message_id}}
+         } =
+           update
+       ) do
+    context = MessageContextStore.get_context(reply_to_message_id)
+    reply(context, update)
+  end
+
   defp process_reply(_), do: {:error, :noop}
 
   defp reply(nil, _), do: {:error, :noop}
+
   defp reply(_, _), do: {:error, :noop}
 end
