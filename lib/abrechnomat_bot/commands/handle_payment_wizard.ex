@@ -5,7 +5,12 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   alias AbrechnomatBot.Commands.HandlePaymentWizard.Parser
 
   defmodule ReplyContext do
-    defstruct step: nil, origin_message_id: nil, amount: nil
+    defstruct step: nil,
+              chat_id: nil,
+              origin_message_id: nil,
+              amount: nil,
+              own_share: nil,
+              text: nil
   end
 
   def command(
@@ -27,7 +32,12 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         }
       )
 
-    reply_context = %ReplyContext{origin_message_id: message_id, step: :amount}
+    reply_context = %ReplyContext{
+      chat_id: chat_id,
+      origin_message_id: message_id,
+      step: :amount
+    }
+
     MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
   end
 
@@ -79,7 +89,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   end
 
   def reply_command(
-        {%ReplyContext{step: :split_choice, amount: amount, origin_message_id: origin_message_id},
+        {%ReplyContext{step: :split_choice} = reply_context,
          %Nadia.Model.Update{
            callback_query: %{
              data: "zero",
@@ -92,14 +102,11 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
       ) do
     Nadia.delete_message(chat_id, message_id)
 
-    # TODO: do the work
-    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 0%",
-      reply_to_message_id: origin_message_id
-    )
+    ask_for_text!(%ReplyContext{reply_context | own_share: 0.0})
   end
 
   def reply_command(
-        {%ReplyContext{step: :split_choice, amount: amount, origin_message_id: origin_message_id},
+        {%ReplyContext{step: :split_choice} = reply_context,
          %Nadia.Model.Update{
            callback_query: %{
              data: "fifty",
@@ -112,10 +119,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
       ) do
     Nadia.delete_message(chat_id, message_id)
 
-    # TODO: do the work
-    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 50%",
-      reply_to_message_id: origin_message_id
-    )
+    ask_for_text!(%ReplyContext{reply_context | own_share: 0.5})
   end
 
   def reply_command(
@@ -151,9 +155,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
 
   def reply_command(
         {%ReplyContext{
-           step: :custom_split,
-           amount: amount,
-           origin_message_id: origin_message_id
+           step: :custom_split
          } = reply_context,
          %Nadia.Model.Update{
            message: %{
@@ -186,10 +188,71 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         )
 
       {:ok, own_share} ->
-        # TODO: do the actual work here!!
-        Nadia.send_message(chat_id, "Amount: #{amount}, Own Share: #{own_share}",
-          reply_to_message_id: origin_message_id
+        ask_for_text!(%ReplyContext{reply_context | own_share: own_share})
+    end
+  end
+
+  def reply_command(
+        {%ReplyContext{
+           step: :text
+         } = reply_context,
+         %Nadia.Model.Update{
+           message: %{
+             chat: %{id: chat_id},
+             message_id: message_id,
+             text: text
+           }
+         }}
+      ) do
+    text
+    |> Parser.parse_text()
+    |> case do
+      {:error, _} ->
+        {:ok, %{message_id: response_message_id}} =
+          Nadia.send_message(
+            chat_id,
+            "Unable to parse the provided text. Try again",
+            reply_to_message_id: message_id,
+            reply_markup: %{
+              force_reply: true,
+              input_field_placeholder: "Pizza",
+              selective: true
+            }
+          )
+
+        MessageContextStore.set_value(
+          response_message_id,
+          __MODULE__,
+          reply_context
+        )
+
+      {:ok, text} ->
+        # TODO: do the work
+        reply_context = %ReplyContext{reply_context | text: text}
+
+        Nadia.send_message(chat_id, "Done! #{inspect(reply_context)}",
+          reply_to_message_id: message_id
         )
     end
+  end
+
+  defp ask_for_text!(
+         %ReplyContext{chat_id: chat_id, origin_message_id: origin_message_id} = reply_context
+       ) do
+    {:ok, %{message_id: response_message_id}} =
+      Nadia.send_message(chat_id, "Nature of the expenditure",
+        reply_to_message_id: origin_message_id,
+        reply_markup: %{
+          force_reply: true,
+          input_field_placeholder: "Pizza",
+          selective: true
+        }
+      )
+
+    MessageContextStore.set_value(
+      response_message_id,
+      __MODULE__,
+      %ReplyContext{reply_context | step: :text}
+    )
   end
 end

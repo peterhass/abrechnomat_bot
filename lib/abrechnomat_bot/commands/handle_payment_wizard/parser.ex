@@ -14,4 +14,14 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard.Parser do
       {num, _}  -> {:ok, num / 100}
     end
   end
+
+  def parse_text(text) do
+    trimmed = String.trim(text)
+
+    case String.length(text) do
+      len when len > 3000 -> {:error, :too_long} # should be able to fit an URL
+      len when len == 0 -> {:error, :empty}
+      _ -> {:ok, trimmed}
+    end
+  end
 end
