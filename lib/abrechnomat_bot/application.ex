@@ -8,6 +8,7 @@ defmodule AbrechnomatBot.Application do
       :ok ->
         children = [
           worker(AbrechnomatBot.CommandReceiver, []),
+          worker(AbrechnomatBot.Commands.MessageContextStore, []),
           # systemd healthcheck 
           :systemd.ready()
         ]

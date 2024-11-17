@@ -10,6 +10,15 @@ defmodule AbrechnomatBot.Commands.Helpers do
     end
   end
 
+  defmacro defreply(command_module) do
+    quote do
+      defp reply({unquote(command_module), context}, update) do
+        preprocess_update(update)
+        unquote(command_module).reply_command({context, update})
+      end
+    end
+  end
+
   defmacro defcallback(command_module, text) do
     quote do
       def command(

@@ -49,7 +49,7 @@ defmodule AbrechnomatBot.CommandReceiver do
       end)
 
       try do
-        AbrechnomatBot.Commands.command(update)
+        AbrechnomatBot.Commands.process_update(update)
       rescue
         err ->
           Logger.log(
