@@ -3,6 +3,10 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   require Amnesia.Helper
   alias AbrechnomatBot.Commands.MessageContextStore
 
+  defmodule ReplyContext do
+    defstruct step: nil, origin_message_id: nil, amount: nil
+  end
+
   def command(
         {_,
          %Nadia.Model.Update{
@@ -22,11 +26,12 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         }
       )
 
-    MessageContextStore.set_value(response_message_id, __MODULE__, :amount)
+    reply_context = %ReplyContext{origin_message_id: message_id, step: :amount}
+    MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
   end
 
   def reply_command(
-        {:amount,
+        {%ReplyContext{step: :amount} = reply_context,
          %Nadia.Model.Update{
            message: %{
              message_id: message_id,
@@ -52,57 +57,67 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     MessageContextStore.set_value(
       response_message_id,
       __MODULE__,
-      {:split_choice, %{amount: text}}
+      %ReplyContext{reply_context | step: :split_choice, amount: text}
     )
   end
 
   def reply_command(
-        {{:split_choice, %{amount: amount}},
+        {%ReplyContext{step: :split_choice, amount: amount, origin_message_id: origin_message_id},
          %Nadia.Model.Update{
            callback_query: %{
              data: "zero",
              message: %{
-               message_id: message_id,
-               chat: %{id: chat_id}
+               chat: %{id: chat_id},
+               message_id: message_id
              }
            }
          }}
       ) do
+    Nadia.delete_message(chat_id, message_id)
+
     # TODO: do the work
-    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 0%", reply_to_message_id: message_id)
+    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 0%",
+      reply_to_message_id: origin_message_id
+    )
   end
 
   def reply_command(
-        {{:split_choice, %{amount: amount}},
+        {%ReplyContext{step: :split_choice, amount: amount, origin_message_id: origin_message_id},
          %Nadia.Model.Update{
            callback_query: %{
              data: "fifty",
              message: %{
-               message_id: message_id,
-               chat: %{id: chat_id}
+               chat: %{id: chat_id},
+               message_id: message_id
              }
            }
          }}
       ) do
+    Nadia.delete_message(chat_id, message_id)
+
     # TODO: do the work
-    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 50%", reply_to_message_id: message_id)
+    Nadia.send_message(chat_id, "Amount: #{amount}, Split: 50%",
+      reply_to_message_id: origin_message_id
+    )
   end
 
   def reply_command(
-        {{:split_choice, %{amount: amount}},
+        {%ReplyContext{step: :split_choice, origin_message_id: origin_message_id} = reply_context,
          %Nadia.Model.Update{
            callback_query: %{
              data: "custom",
              message: %{
-               message_id: message_id,
-               chat: %{id: chat_id}
+               chat: %{id: chat_id},
+               message_id: message_id
              }
            }
          }}
       ) do
+    Nadia.delete_message(chat_id, message_id)
+
     {:ok, %{message_id: response_message_id}} =
       Nadia.send_message(chat_id, "Split",
-        reply_to_message_id: message_id,
+        reply_to_message_id: origin_message_id,
         reply_markup: %{
           force_reply: true,
           input_field_placeholder: "33.3%",
@@ -113,15 +128,18 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     MessageContextStore.set_value(
       response_message_id,
       __MODULE__,
-      {:custom_split, %{amount: amount}}
+      %ReplyContext{reply_context | step: :custom_split}
     )
   end
 
   def reply_command(
-        {{:custom_split, %{amount: amount}},
+        {%ReplyContext{
+           step: :custom_split,
+           amount: amount,
+           origin_message_id: original_message_id
+         },
          %Nadia.Model.Update{
            message: %{
-             message_id: message_id,
              chat: %{id: chat_id},
              text: text
            }
@@ -129,7 +147,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
       ) do
     # TODO: do the actual work here!!
     Nadia.send_message(chat_id, "Amount: #{amount}, Split: #{text}",
-      reply_to_message_id: message_id
+      reply_to_message_id: original_message_id
     )
   end
 end
