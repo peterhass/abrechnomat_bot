@@ -1,8 +1,10 @@
 defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   require Amnesia
   require Amnesia.Helper
+  alias AbrechnomatBot.Database.{Bill, Payment, User}
   alias AbrechnomatBot.Commands.MessageContextStore
   alias AbrechnomatBot.Commands.HandlePaymentWizard.Parser
+  import Phoenix.HTML
 
   defmodule ReplyContext do
     defstruct step: nil,
@@ -10,7 +12,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
               origin_message_id: nil,
               amount: nil,
               own_share: nil,
-              text: nil
+              text: nil,
+              date: nil
   end
 
   def command(
@@ -18,7 +21,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          %Nadia.Model.Update{
            message: %{
              message_id: message_id,
-             chat: %{id: chat_id}
+             chat: %{id: chat_id},
+             date: date
            }
          }}
       ) do
@@ -35,7 +39,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     reply_context = %ReplyContext{
       chat_id: chat_id,
       origin_message_id: message_id,
-      step: :amount
+      step: :amount,
+      date: DateTime.from_unix!(date)
     }
 
     MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
@@ -200,7 +205,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            message: %{
              chat: %{id: chat_id},
              message_id: message_id,
-             text: text
+             text: text,
+             from: from_user
            }
          }}
       ) do
@@ -227,12 +233,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         )
 
       {:ok, text} ->
-        # TODO: do the work
-        reply_context = %ReplyContext{reply_context | text: text}
-
-        Nadia.send_message(chat_id, "Done! #{inspect(reply_context)}",
-          reply_to_message_id: message_id
-        )
+        %ReplyContext{reply_context | text: text}
+        |> create_payment_and_reply(from_user)
     end
   end
 
@@ -254,5 +256,60 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
       __MODULE__,
       %ReplyContext{reply_context | step: :text}
     )
+  end
+
+  defp create_payment_and_reply(
+         %ReplyContext{
+           chat_id: chat_id,
+           origin_message_id: message_id,
+           amount: amount,
+           own_share: own_share,
+           text: text,
+           date: date
+         },
+         nadia_user
+       ) do
+    Amnesia.transaction do
+      Bill.find_or_create_by_chat(chat_id)
+      |> Bill.add_payment(full_user_resolve(nadia_user), date, amount, own_share, text)
+      |> payment_message
+      |> send_success_message(chat_id, message_id)
+    end
+  end
+
+  defp full_user_resolve(%{id: id}) do
+    User.find(id)
+  end
+
+  defp send_success_message(text, chat_id, message_id) do
+    Nadia.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
+  end
+
+  defp payment_message(
+         %Payment{id: id, user: user, date: date, amount: amount, text: text} = payment
+       ) do
+    [
+      "Added following payment ...",
+      "ID: #{id}",
+      Abrechnomat.Users.to_short_string(user),
+      "#{date}",
+      "#{amount}",
+      payment_message_share(payment),
+      "Text: #{text}"
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n")
+    |> html_escape
+    |> safe_to_string
+  end
+
+  # TODO: still needed? we always provide own_share value
+  #   Update: Yes, needed for groups with growing users(?) (DOUBLE CHECK!)
+  defp payment_message_share(%Payment{amount: _, own_share: own_share}) when is_nil(own_share) do
+    nil
+  end
+
+  defp payment_message_share(%Payment{amount: amount, own_share: own_share}) do
+    "own share: #{own_share}% = #{Money.multiply(amount, own_share)}"
   end
 end
