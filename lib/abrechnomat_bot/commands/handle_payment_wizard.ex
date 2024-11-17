@@ -2,6 +2,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   require Amnesia
   require Amnesia.Helper
   alias AbrechnomatBot.Commands.MessageContextStore
+  alias AbrechnomatBot.Commands.HandlePaymentWizard.Parser
 
   defmodule ReplyContext do
     defstruct step: nil, origin_message_id: nil, amount: nil
@@ -40,25 +41,41 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            }
          }}
       ) do
-    {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "Split",
-        reply_to_message_id: message_id,
-        reply_markup: %Nadia.Model.InlineKeyboardMarkup{
-          inline_keyboard: [
-            [
-              %{callback_data: "zero", text: "0%"},
-              %{callback_data: "fifty", text: "50%"},
-              %{callback_data: "custom", text: "Custom"}
-            ]
-          ]
-        }
-      )
+    text
+    |> Parser.parse_amount()
+    |> case do
+      :error ->
+        {:ok, %{message_id: response_message_id}} =
+          Nadia.send_message(chat_id, "Unable to parse the provided amount. Try again",
+            reply_to_message_id: message_id,
+            reply_markup: %{
+              force_reply: true,
+              input_field_placeholder: "100.00 EUR",
+              selective: true
+            }
+          )
 
-    MessageContextStore.set_value(
-      response_message_id,
-      __MODULE__,
-      %ReplyContext{reply_context | step: :split_choice, amount: text}
-    )
+        reply_context = %ReplyContext{reply_context | step: :amount}
+        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
+
+      {:ok, money} ->
+        {:ok, %{message_id: response_message_id}} =
+          Nadia.send_message(chat_id, "Split",
+            reply_to_message_id: message_id,
+            reply_markup: %Nadia.Model.InlineKeyboardMarkup{
+              inline_keyboard: [
+                [
+                  %{callback_data: "zero", text: "0%"},
+                  %{callback_data: "fifty", text: "50%"},
+                  %{callback_data: "custom", text: "Custom"}
+                ]
+              ]
+            }
+          )
+
+        reply_context = %ReplyContext{reply_context | step: :split_choice, amount: money}
+        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
+    end
   end
 
   def reply_command(
