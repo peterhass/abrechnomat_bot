@@ -80,6 +80,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
             reply_markup: %Nadia.Model.InlineKeyboardMarkup{
               inline_keyboard: [
                 [
+                  %{callback_data: "group-equal", text: "Equally distributed over whole group"},
                   %{callback_data: "zero", text: "0%"},
                   %{callback_data: "fifty", text: "50%"},
                   %{callback_data: "custom", text: "Custom"}
@@ -91,6 +92,23 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         reply_context = %ReplyContext{reply_context | step: :split_choice, amount: money}
         MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
     end
+  end
+
+  def reply_command(
+        {%ReplyContext{step: :split_choice} = reply_context,
+         %Nadia.Model.Update{
+           callback_query: %{
+             data: "group-equal",
+             message: %{
+               chat: %{id: chat_id},
+               message_id: message_id
+             }
+           }
+         }}
+      ) do
+    Nadia.delete_message(chat_id, message_id)
+
+    ask_for_text!(%ReplyContext{reply_context | own_share: nil})
   end
 
   def reply_command(
