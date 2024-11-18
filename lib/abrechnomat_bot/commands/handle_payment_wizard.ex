@@ -27,7 +27,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          }}
       ) do
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "Amount",
+      Nadia.send_message(chat_id, "🎉 Hey hey! Ready to split a bill? ✌️ How much are we talking here? 💸",
         reply_to_message_id: message_id,
         reply_markup: %{
           force_reply: true,
@@ -75,7 +75,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
 
       {:ok, money} ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(chat_id, "Own share",
+          Nadia.send_message(chat_id, "💰 Big spender! Okay, how are we dividing this treasure? 🪙 (How big is your part of the bill?)",
             reply_to_message_id: message_id,
             reply_markup: %Nadia.Model.InlineKeyboardMarkup{
               inline_keyboard: [
@@ -260,7 +260,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          %ReplyContext{chat_id: chat_id, origin_message_id: origin_message_id} = reply_context
        ) do
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "Nature of the expenditure",
+      Nadia.send_message(chat_id, "Easy peasy. 🍋 What’s this cash for? 🎯 (e.g., dinner 🍕, groceries 🛒, trip ✈️, or something wild 🦄?)",
         reply_to_message_id: origin_message_id,
         reply_markup: %{
           force_reply: true,
@@ -307,7 +307,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          %Payment{id: id, user: user, date: date, amount: amount, text: text} = payment
        ) do
     [
-      "Added following payment ...",
+      "🎉 Ka-ching! Payment added! 💸",
       "ID: #{id}",
       Abrechnomat.Users.to_short_string(user),
       "#{date}",
