@@ -5,7 +5,7 @@ defmodule AbrechnomatBot.MixProject do
     [
       app: :abrechnomat_bot,
       version: "0.1.0",
-      elixir: "~> 1.17",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases()
@@ -31,6 +31,7 @@ defmodule AbrechnomatBot.MixProject do
       {:systemd, "~> 0.6"},
       {:ex_syslogger, "~> 1.5"},
       {:nadia, "~> 0.7.0"},
+
       # needed for nadia
       {:jason, "~> 1.1"},
       {:amnesia, "~> 0.2.7"},
