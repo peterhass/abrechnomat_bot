@@ -17,10 +17,7 @@ defmodule AbrechnomatBot.MixProject do
     [
       extra_applications: [:logger],
       mod: {AbrechnomatBot.Application, []},
-      application: [
-        :nadia
-        #        :amnesia
-      ],
+      application: [],
       included_applications: [:ex_syslogger]
     ]
   end
@@ -30,14 +27,15 @@ defmodule AbrechnomatBot.MixProject do
     [
       {:systemd, "~> 0.6"},
       {:ex_syslogger, "~> 1.5"},
-      {:nadia, "~> 0.7.0"},
-
-      # needed for nadia
-      {:jason, "~> 1.1"},
+      {:csv, "~> 2.3"},
       {:amnesia, "~> 0.2.7"},
       {:money, "~> 1.7.0"},
       {:phoenix_html, "~> 2.14.2"},
-      {:csv, "~> 2.3"}
+
+      # Telegex + optional deps
+      {:telegex, "~> 1.9.0-rc.0"},
+      {:finch, "~> 0.19.0"},
+      {:multipart, "~> 0.4.0"}
     ]
   end
 

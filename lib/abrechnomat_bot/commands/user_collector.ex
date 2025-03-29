@@ -4,7 +4,7 @@ defmodule AbrechnomatBot.Commands.UserCollector do
   require Logger
   require Amnesia
   require Amnesia.Helper
-  alias Nadia.Model.Update
+  alias Telegex.Type.Update
   alias AbrechnomatBot.Database.User
 
   def process(update) do
@@ -59,7 +59,7 @@ defmodule AbrechnomatBot.Commands.UserCollector do
   def collect_users(%Update{message: %{entities: entities}} = update) do
     reducer = fn entity, acc ->
       case entity do
-        %{type: "text_mention", user: user} -> [struct(Nadia.Model.User, user) | acc]
+        %{type: "text_mention", user: user} -> [struct(Telegex.Type.User, user) | acc]
         _ -> acc
       end
     end

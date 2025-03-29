@@ -6,6 +6,7 @@ Calculates as little transactions as possible to pay everybody out.
 ## Usage
 
 - Add it to a group (works best if you give it admin privileges)
+- Send `/pay` to check out wizard (easiest way to add payments)
 - Send `/add_payment` see on it should be used
 - `/revert_payment` to remove an added payment
 - Use `/bill_stats` to see the current amount and needed transactions
@@ -28,8 +29,7 @@ Calculates as little transactions as possible to pay everybody out.
 
 ## TODO 
 
-- Nadia is dead. Migrate to https://github.com/visciang/telegram ?
-- Use webhooks instead of polling
+- CommandReceiver: Split up update fetching from update processing into separate GenServer messages
 - Respect edited messages?
 - Create pre-filled paypal links for final payment (user needs to configure their paypal account)
 - Create some way to tip bot provider (maybe after closing the bill)

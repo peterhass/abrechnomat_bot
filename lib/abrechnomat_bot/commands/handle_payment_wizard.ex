@@ -18,7 +18,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
 
   def command(
         {_,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            message: %{
              message_id: message_id,
              chat: %{id: chat_id},
@@ -27,7 +27,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          }}
       ) do
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(
+      Telegex.send_message(
         chat_id,
         "🎉 Hey hey! Ready to split a bill? ✌️ How much are we talking here? 💸",
         reply_to_message_id: message_id,
@@ -45,14 +45,12 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
       date: DateTime.from_unix!(date)
     }
 
-    MessageContextStore.set_value(response_message_id, __MODULE__, reply_context,
-      ttl: reply_context_ttl()
-    )
+    MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
   end
 
   def reply_command(
         {%ReplyContext{step: :amount} = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            message: %{
              message_id: message_id,
              chat: %{id: chat_id},
@@ -65,7 +63,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     |> case do
       :error ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(chat_id, "Unable to parse the provided amount. Try again",
+          Telegex.send_message(chat_id, "Unable to parse the provided amount. Try again",
             reply_to_message_id: message_id,
             reply_markup: %{
               force_reply: true,
@@ -76,17 +74,15 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
 
         reply_context = %ReplyContext{reply_context | step: :amount}
 
-        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context,
-          ttl: reply_context_ttl()
-        )
+        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
 
       {:ok, money} ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(
+          Telegex.send_message(
             chat_id,
             "💰 Big spender! Okay, how are we dividing this treasure? 🪙 (How big is your part of the bill?)",
             reply_to_message_id: message_id,
-            reply_markup: %Nadia.Model.InlineKeyboardMarkup{
+            reply_markup: %Telegex.Type.InlineKeyboardMarkup{
               inline_keyboard: [
                 [
                   %{callback_data: "group-equal", text: "Equally distributed over whole group"},
@@ -100,15 +96,13 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
 
         reply_context = %ReplyContext{reply_context | step: :split_choice, amount: money}
 
-        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context,
-          ttl: reply_context_ttl()
-        )
+        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
     end
   end
 
   def reply_command(
         {%ReplyContext{step: :split_choice} = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            callback_query: %{
              data: "group-equal",
              message: %{
@@ -118,14 +112,14 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            }
          }}
       ) do
-    Nadia.delete_message(chat_id, message_id)
+    Telegex.delete_message(chat_id, message_id)
 
     ask_for_text!(%ReplyContext{reply_context | own_share: nil})
   end
 
   def reply_command(
         {%ReplyContext{step: :split_choice} = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            callback_query: %{
              data: "zero",
              message: %{
@@ -135,14 +129,14 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            }
          }}
       ) do
-    Nadia.delete_message(chat_id, message_id)
+    Telegex.delete_message(chat_id, message_id)
 
     ask_for_text!(%ReplyContext{reply_context | own_share: 0.0})
   end
 
   def reply_command(
         {%ReplyContext{step: :split_choice} = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            callback_query: %{
              data: "fifty",
              message: %{
@@ -152,14 +146,14 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            }
          }}
       ) do
-    Nadia.delete_message(chat_id, message_id)
+    Telegex.delete_message(chat_id, message_id)
 
     ask_for_text!(%ReplyContext{reply_context | own_share: 0.5})
   end
 
   def reply_command(
         {%ReplyContext{step: :split_choice, origin_message_id: origin_message_id} = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            callback_query: %{
              data: "custom",
              message: %{
@@ -169,10 +163,10 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
            }
          }}
       ) do
-    Nadia.delete_message(chat_id, message_id)
+    Telegex.delete_message(chat_id, message_id)
 
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "Own share",
+      Telegex.send_message(chat_id, "Own share",
         reply_to_message_id: origin_message_id,
         reply_markup: %{
           force_reply: true,
@@ -184,8 +178,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     MessageContextStore.set_value(
       response_message_id,
       __MODULE__,
-      %ReplyContext{reply_context | step: :custom_split},
-      ttl: reply_context_ttl()
+      %ReplyContext{reply_context | step: :custom_split}
     )
   end
 
@@ -193,7 +186,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         {%ReplyContext{
            step: :custom_split
          } = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            message: %{
              chat: %{id: chat_id},
              message_id: message_id,
@@ -206,7 +199,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     |> case do
       :error ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(
+          Telegex.send_message(
             chat_id,
             "Unable to parse the provided share. Shares cannot have fractions. Try again",
             reply_to_message_id: message_id,
@@ -220,8 +213,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         MessageContextStore.set_value(
           response_message_id,
           __MODULE__,
-          %ReplyContext{reply_context | step: :custom_split},
-          ttl: reply_context_ttl()
+          %ReplyContext{reply_context | step: :custom_split}
         )
 
       {:ok, own_share} ->
@@ -233,7 +225,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         {%ReplyContext{
            step: :text
          } = reply_context,
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            message: %{
              chat: %{id: chat_id},
              message_id: message_id,
@@ -247,7 +239,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     |> case do
       {:error, _} ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(
+          Telegex.send_message(
             chat_id,
             "Unable to parse the provided text. Try again",
             reply_to_message_id: message_id,
@@ -261,8 +253,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         MessageContextStore.set_value(
           response_message_id,
           __MODULE__,
-          reply_context,
-          ttl: reply_context_ttl()
+          reply_context
         )
 
       {:ok, text} ->
@@ -275,7 +266,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          %ReplyContext{chat_id: chat_id, origin_message_id: origin_message_id} = reply_context
        ) do
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(
+      Telegex.send_message(
         chat_id,
         "Easy peasy. 🍋 What’s this cash for? 🎯 (e.g., dinner 🍕, groceries 🛒, trip ✈️, or something wild 🦄?)",
         reply_to_message_id: origin_message_id,
@@ -289,8 +280,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     MessageContextStore.set_value(
       response_message_id,
       __MODULE__,
-      %ReplyContext{reply_context | step: :text},
-      ttl: reply_context_ttl()
+      %ReplyContext{reply_context | step: :text}
     )
   end
 
@@ -318,7 +308,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   end
 
   defp send_success_message(text, chat_id, message_id) do
-    Nadia.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
+    Telegex.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
   end
 
   defp payment_message(
@@ -348,6 +338,4 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   defp payment_message_share(%Payment{amount: amount, own_share: own_share}) do
     "own share: #{own_share}% = #{Money.multiply(amount, own_share)}"
   end
-
-  defp reply_context_ttl, do: Abrechnomat.Times.minutes(10)
 end

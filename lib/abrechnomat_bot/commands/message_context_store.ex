@@ -1,5 +1,6 @@
 defmodule AbrechnomatBot.Commands.MessageContextStore do
   use GenServer
+  alias Abrechnomat.Times
 
   defmodule StoreImpl do
     def init do
@@ -31,19 +32,18 @@ defmodule AbrechnomatBot.Commands.MessageContextStore do
     GenServer.start_link(__MODULE__, StoreImpl.init(), default)
   end
 
-  def set_value(message_id, module, value, ttl: ttl) do
-    set_value(__MODULE__, message_id, module, value, ttl)
+  def set_value(message_id, module, value, options \\ []) do
+    pid = Keyword.get(options, :pid, __MODULE__)
+    ttl = Keyword.get(options, :ttl, Times.minutes(10))
+
+    GenServer.call(
+      pid,
+      {:set_value, message_id, module, value, ttl}
+    )
   end
 
-  def set_value(pid, message_id, module, value, ttl: ttl) do
-    GenServer.call(pid, {:set_value, message_id, module, value, ttl})
-  end
-
-  def get_context(message_id) do
-    get_context(__MODULE__, message_id)
-  end
-
-  def get_context(pid, message_id) do
+  def get_context(message_id, options \\ []) do
+    pid = Keyword.get(options, :pid, __MODULE__)
     GenServer.call(pid, {:get_context, message_id})
   end
 

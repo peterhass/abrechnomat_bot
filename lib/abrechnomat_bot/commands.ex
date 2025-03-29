@@ -26,14 +26,14 @@ defmodule AbrechnomatBot.Commands do
     {process_reply(update), command(update)}
   end
 
-  def command(%Nadia.Model.Update{} = update) do
+  def command(%Telegex.Type.Update{} = update) do
     MigrateChat.process(update)
 
     {:error, :noop}
   end
 
   defp process_reply(
-         %Nadia.Model.Update{message: %{reply_to_message: %{message_id: reply_to_message_id}}} =
+         %Telegex.Type.Update{message: %{reply_to_message: %{message_id: reply_to_message_id}}} =
            update
        ) do
     context = MessageContextStore.get_context(reply_to_message_id)
@@ -41,7 +41,7 @@ defmodule AbrechnomatBot.Commands do
   end
 
   defp process_reply(
-         %Nadia.Model.Update{
+         %Telegex.Type.Update{
            callback_query: %{message: %{message_id: reply_to_message_id}}
          } =
            update

@@ -9,13 +9,13 @@ defmodule AbrechnomatBot.Commands.MigrateChat do
     |> execute
   end
 
-  def parse(%Nadia.Model.Update{
+  def parse(%Telegex.Type.Update{
         message: %{migrate_from_chat_id: old_chat_id, chat: %{id: new_chat_id}}
       }) do
     {:ok, {old_chat_id, new_chat_id}}
   end
 
-  def parse(%Nadia.Model.Update{
+  def parse(%Telegex.Type.Update{
         message: %{chat: %{id: old_chat_id}, migrate_to_chat_id: new_chat_id}
       }) do
     {:ok, {old_chat_id, new_chat_id}}

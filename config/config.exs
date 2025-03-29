@@ -1,7 +1,5 @@
 import Config
 
-config :nadia, token: {:system, "TELEGRAM_TOKEN", nil}
-
 config :logger, :ex_syslogger_error,
   level: :error,
   format: "$node $metadata $message",

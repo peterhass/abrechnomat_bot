@@ -10,7 +10,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
 
   def parse({
         _,
-        %Nadia.Model.Update{
+        %Telegex.Type.Update{
           message: %{
             entities: entities,
             message_id: message_id,
@@ -67,7 +67,10 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       ~r/^@/
       |> Regex.replace(username, "")
 
-    [remaining_text, %Nadia.Model.User{username: stripped_username}]
+    [
+      remaining_text,
+      %Telegex.Type.User{username: stripped_username, id: nil, is_bot: false, first_name: nil}
+    ]
   end
 
   def get_target_user(text, [

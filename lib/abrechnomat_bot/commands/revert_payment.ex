@@ -42,7 +42,7 @@ defmodule AbrechnomatBot.Commands.RevertPayment do
   end
 
   defp parse(
-         {text, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}
+         {text, %Telegex.Type.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}
        ) do
     text
     |> String.trim()
@@ -54,6 +54,6 @@ defmodule AbrechnomatBot.Commands.RevertPayment do
   end
 
   defp reply(text, chat_id, message_id) do
-    Nadia.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
+    Telegex.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
   end
 end

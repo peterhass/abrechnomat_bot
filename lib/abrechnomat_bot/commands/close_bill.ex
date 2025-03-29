@@ -16,7 +16,7 @@ defmodule AbrechnomatBot.Commands.CloseBill do
   end
 
   def execute({:check, {chat_id, message_id}}) do
-    reply_markup = %Nadia.Model.InlineKeyboardMarkup{
+    reply_markup = %Telegex.Type.InlineKeyboardMarkup{
       inline_keyboard: [
         [
           %{
@@ -27,14 +27,14 @@ defmodule AbrechnomatBot.Commands.CloseBill do
       ]
     }
 
-    Nadia.send_message(chat_id, "Are you sure?",
+    Telegex.send_message(chat_id, "Are you sure?",
       reply_to_message_id: message_id,
       reply_markup: reply_markup
     )
   end
 
   def execute({:execute, {chat_id, message_id, bot_message_id}}) do
-    Nadia.delete_message(chat_id, bot_message_id)
+    Telegex.delete_message(chat_id, bot_message_id)
 
     Amnesia.transaction do
       case Bill.find_by_chat(chat_id) do
@@ -55,7 +55,7 @@ defmodule AbrechnomatBot.Commands.CloseBill do
 
   defp parse(
          {text,
-          %Nadia.Model.Update{
+          %Telegex.Type.Update{
             callback_query: %{
               message: %{
                 reply_to_message: %{message_id: message_id},
@@ -68,12 +68,12 @@ defmodule AbrechnomatBot.Commands.CloseBill do
     {parse_message_text(text), {chat_id, message_id, bot_message_id}}
   end
 
-  defp parse({_, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
+  defp parse({_, %Telegex.Type.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
     {:check, {chat_id, message_id}}
   end
 
   defp reply(text, chat_id, message_id) do
-    Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
+    Telegex.send_message(chat_id, text, reply_to_message_id: message_id)
   end
 
   defp parse_message_text(" SURE") do

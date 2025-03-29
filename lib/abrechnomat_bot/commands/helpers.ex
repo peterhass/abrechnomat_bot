@@ -3,7 +3,7 @@ defmodule AbrechnomatBot.Commands.Helpers do
 
   defmacro defcommand(command_module, text) do
     quote do
-      def command(%Nadia.Model.Update{message: %{text: unquote(text) <> text_args}} = update) do
+      def command(%Telegex.Type.Update{message: %{text: unquote(text) <> text_args}} = update) do
         preprocess_update(update)
         unquote(command_module).command({text_args, update})
       end
@@ -22,7 +22,7 @@ defmodule AbrechnomatBot.Commands.Helpers do
   defmacro defcallback(command_module, text) do
     quote do
       def command(
-            %Nadia.Model.Update{callback_query: %{data: unquote(text) <> text_args}} = update
+            %Telegex.Type.Update{callback_query: %{data: unquote(text) <> text_args}} = update
           ) do
         preprocess_update(update)
         unquote(command_module).command_callback({text_args, update})

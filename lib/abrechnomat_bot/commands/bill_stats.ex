@@ -55,12 +55,12 @@ defmodule AbrechnomatBot.Commands.BillStats do
     end
   end
 
-  defp parse({_, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
+  defp parse({_, %Telegex.Type.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
     {chat_id, message_id}
   end
 
   defp reply(text, chat_id, message_id) do
-    Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
+    Telegex.send_message(chat_id, text, reply_to_message_id: message_id)
   end
 
   defp transactions_with_resolved_users(transactions) do

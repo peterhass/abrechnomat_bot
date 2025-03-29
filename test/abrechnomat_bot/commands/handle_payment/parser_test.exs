@@ -3,21 +3,20 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
   alias AbrechnomatBot.Commands.HandlePayment.Parser
 
   test "amount and text for another user" do
-    update = %Nadia.Model.Update{
+    update = %Telegex.Type.Update{
       callback_query: nil,
       channel_post: nil,
       chosen_inline_result: nil,
       edited_message: nil,
       inline_query: nil,
-      message: %Nadia.Model.Message{
+      message: %Telegex.Type.Message{
         audio: nil,
         caption: nil,
         channel_chat_created: nil,
-        chat: %Nadia.Model.Chat{
+        chat: %Telegex.Type.Chat{
           first_name: nil,
           id: -431_581_683,
           last_name: nil,
-          photo: nil,
           title: "test123",
           type: "group",
           username: nil
@@ -40,14 +39,12 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
             }
           }
         ],
-        forward_date: nil,
-        forward_from: nil,
-        forward_from_chat: nil,
-        from: %Nadia.Model.User{
+        from: %Telegex.Type.User{
           first_name: "peterweissnix",
           id: 11_453_244,
           last_name: nil,
-          username: "p_ter"
+          username: "p_ter",
+          is_bot: false
         },
         group_chat_created: nil,
         left_chat_member: nil,
@@ -55,7 +52,6 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
         message_id: 8,
         migrate_from_chat_id: nil,
         migrate_to_chat_id: nil,
-        new_chat_member: nil,
         new_chat_photo: [],
         new_chat_title: nil,
         photo: [],
@@ -103,7 +99,10 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
                  %{length: 12, offset: 0, type: "bot_command"},
                  %{length: 10, offset: 13, type: "mention"}
                ]
-             ) == [" 54 Lebensmittel", %Nadia.Model.User{username: "christina"}]
+             ) == [
+               " 54 Lebensmittel",
+               %Telegex.Type.User{username: "christina", id: nil, is_bot: false, first_name: nil}
+             ]
     end
 
     test "return whole user on text mention" do

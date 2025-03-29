@@ -38,7 +38,7 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
 
       File.close(file)
 
-      Nadia.send_document(chat_id, file_path, reply_to_message_id: message_id)
+      Telegex.send_document(chat_id, file_path, reply_to_message_id: message_id)
     after
       File.close(file)
       File.rm(file_path)
@@ -72,12 +72,12 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     to_string(value)
   end
 
-  defp parse({_, %Nadia.Model.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
+  defp parse({_, %Telegex.Type.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}) do
     {chat_id, message_id}
   end
 
   defp reply(text, chat_id, message_id) do
-    Nadia.send_message(chat_id, text, reply_to_message_id: message_id)
+    Telegex.send_message(chat_id, text, reply_to_message_id: message_id)
   end
 
   defp export_file_name do

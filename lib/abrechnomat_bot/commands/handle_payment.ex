@@ -81,7 +81,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
   end
 
   defp reply(text, chat_id, message_id) do
-    Nadia.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
+    Telegex.send_message(chat_id, text, reply_to_message_id: message_id, parse_mode: "HTML")
   end
 
   def payment_message(

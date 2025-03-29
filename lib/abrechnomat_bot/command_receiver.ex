@@ -4,6 +4,8 @@ defmodule AbrechnomatBot.CommandReceiver do
   use GenServer
 
   defmodule ServerImpl do
+    alias Telegex.Type.Update
+
     def init do
       %{last_update_id: nil}
     end
@@ -16,7 +18,7 @@ defmodule AbrechnomatBot.CommandReceiver do
           id -> id + 1
         end
 
-      {:ok, updates} = Nadia.get_updates(offset: updates_offset)
+      {:ok, updates} = Telegex.get_updates(offset: updates_offset)
 
       if updates == [] do
         {:ok, state}
@@ -42,7 +44,7 @@ defmodule AbrechnomatBot.CommandReceiver do
       process_updates(remaining_updates)
     end
 
-    def process_update(%{update_id: update_id} = update) do
+    def process_update(%Update{update_id: update_id} = update) do
       Logger.debug(fn ->
         {"[#{__MODULE__}] Process update: #{inspect(update, pretty: true)}",
          [update_id: update_id]}
@@ -54,9 +56,11 @@ defmodule AbrechnomatBot.CommandReceiver do
         err ->
           Logger.log(
             :error,
-            "[#{__MODULE__}] Failed at processing update #{inspect([err: err, update: update], pretty: true)}",
-            update_id: update_id
+            "[#{__MODULE__}] Failed at processing update #{update_id}: #{Exception.format(:error, err)}`"
           )
+
+          Logger.log(:debug, inspect(update, pretty: true))
+          Logger.log(:debug, Exception.format(:error, err, __STACKTRACE__))
       end
 
       {:ok, update_id}
@@ -81,15 +85,6 @@ defmodule AbrechnomatBot.CommandReceiver do
 
     schedule_poll()
     {:noreply, new_state}
-  end
-
-  # Workaround for issue with http lib used by nadia
-  # No idea why this happens
-  # AbrechnomatBot.CommandReceiver.handle_info({:ssl_closed, {:sslsocket, {:gen_tcp, #Port<0.8>, :tls_connection, :undefined}, [#PID<0.377.0>, #PID<0.376.0>]}}, %{last_update_id: nil})
-  def handle_info(args, state) do
-    Logger.debug("Handle info called with foreign arguments: #{inspect(args, pretty: true)}")
-
-    {:noreply, state}
   end
 
   defp schedule_poll() do
