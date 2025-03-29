@@ -82,7 +82,9 @@ defdatabase AbrechnomatBot.Database do
     end
   end
 
-  deftable User, [:id, :username, :first_name, :last_name], type: :ordered_set, index: [:username] do
+  deftable User, [:id, :username, :first_name, :last_name],
+    type: :ordered_set,
+    index: [:username] do
     @type t :: %User{
             id: Integer.t(),
             username: String.t(),
