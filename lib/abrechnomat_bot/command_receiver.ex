@@ -64,7 +64,7 @@ defmodule AbrechnomatBot.CommandReceiver do
   end
 
   # client
-  def start_link do
+  def start_link(_) do
     GenServer.start_link(__MODULE__, ServerImpl.init(), name: __MODULE__)
   end
 

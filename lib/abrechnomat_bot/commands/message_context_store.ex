@@ -22,16 +22,29 @@ defmodule AbrechnomatBot.Commands.MessageContextStore do
   end
 
   # client
-  def start_link() do
-    GenServer.start_link(__MODULE__, StoreImpl.init(), name: __MODULE__)
+  def start_link(default) when is_list(default) do
+    options = Keyword.merge([name: __MODULE__], default)
+    GenServer.start_link(__MODULE__, StoreImpl.init(), options)
   end
 
-  def set_value(message_id, module, value, ttl \\ 10 * 60 * 1_000) do
-    GenServer.call(__MODULE__, {:set_value, message_id, module, value, ttl})
+  def start_link(default) when is_list(default) do
+    GenServer.start_link(__MODULE__, StoreImpl.init(), default)
+  end
+
+  def set_value(message_id, module, value, ttl: ttl) do
+    set_value(__MODULE__, message_id, module, value, ttl)
+  end
+
+  def set_value(pid, message_id, module, value, ttl: ttl) do
+    GenServer.call(pid, {:set_value, message_id, module, value, ttl})
   end
 
   def get_context(message_id) do
-    GenServer.call(__MODULE__, {:get_context, message_id})
+    get_context(__MODULE__, message_id)
+  end
+
+  def get_context(pid, message_id) do
+    GenServer.call(pid, {:get_context, message_id})
   end
 
   # server
@@ -50,6 +63,7 @@ defmodule AbrechnomatBot.Commands.MessageContextStore do
   @impl true
   def handle_call({:set_value, message_id, module, value, ttl}, _from, state) do
     new_state = StoreImpl.set(state, message_id, module, value)
+
     Process.send_after(self(), {:expire, message_id}, ttl)
 
     {:reply, :ok, new_state}

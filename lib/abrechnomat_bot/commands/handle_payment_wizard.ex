@@ -27,7 +27,9 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          }}
       ) do
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "🎉 Hey hey! Ready to split a bill? ✌️ How much are we talking here? 💸",
+      Nadia.send_message(
+        chat_id,
+        "🎉 Hey hey! Ready to split a bill? ✌️ How much are we talking here? 💸",
         reply_to_message_id: message_id,
         reply_markup: %{
           force_reply: true,
@@ -43,7 +45,9 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
       date: DateTime.from_unix!(date)
     }
 
-    MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
+    MessageContextStore.set_value(response_message_id, __MODULE__, reply_context,
+      ttl: reply_context_ttl()
+    )
   end
 
   def reply_command(
@@ -71,11 +75,16 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
           )
 
         reply_context = %ReplyContext{reply_context | step: :amount}
-        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
+
+        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context,
+          ttl: reply_context_ttl()
+        )
 
       {:ok, money} ->
         {:ok, %{message_id: response_message_id}} =
-          Nadia.send_message(chat_id, "💰 Big spender! Okay, how are we dividing this treasure? 🪙 (How big is your part of the bill?)",
+          Nadia.send_message(
+            chat_id,
+            "💰 Big spender! Okay, how are we dividing this treasure? 🪙 (How big is your part of the bill?)",
             reply_to_message_id: message_id,
             reply_markup: %Nadia.Model.InlineKeyboardMarkup{
               inline_keyboard: [
@@ -90,7 +99,10 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
           )
 
         reply_context = %ReplyContext{reply_context | step: :split_choice, amount: money}
-        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context)
+
+        MessageContextStore.set_value(response_message_id, __MODULE__, reply_context,
+          ttl: reply_context_ttl()
+        )
     end
   end
 
@@ -172,7 +184,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     MessageContextStore.set_value(
       response_message_id,
       __MODULE__,
-      %ReplyContext{reply_context | step: :custom_split}
+      %ReplyContext{reply_context | step: :custom_split},
+      ttl: reply_context_ttl()
     )
   end
 
@@ -207,7 +220,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         MessageContextStore.set_value(
           response_message_id,
           __MODULE__,
-          %ReplyContext{reply_context | step: :custom_split}
+          %ReplyContext{reply_context | step: :custom_split},
+          ttl: reply_context_ttl()
         )
 
       {:ok, own_share} ->
@@ -247,7 +261,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
         MessageContextStore.set_value(
           response_message_id,
           __MODULE__,
-          reply_context
+          reply_context,
+          ttl: reply_context_ttl()
         )
 
       {:ok, text} ->
@@ -260,7 +275,9 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          %ReplyContext{chat_id: chat_id, origin_message_id: origin_message_id} = reply_context
        ) do
     {:ok, %{message_id: response_message_id}} =
-      Nadia.send_message(chat_id, "Easy peasy. 🍋 What’s this cash for? 🎯 (e.g., dinner 🍕, groceries 🛒, trip ✈️, or something wild 🦄?)",
+      Nadia.send_message(
+        chat_id,
+        "Easy peasy. 🍋 What’s this cash for? 🎯 (e.g., dinner 🍕, groceries 🛒, trip ✈️, or something wild 🦄?)",
         reply_to_message_id: origin_message_id,
         reply_markup: %{
           force_reply: true,
@@ -272,7 +289,8 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
     MessageContextStore.set_value(
       response_message_id,
       __MODULE__,
-      %ReplyContext{reply_context | step: :text}
+      %ReplyContext{reply_context | step: :text},
+      ttl: reply_context_ttl()
     )
   end
 
@@ -330,4 +348,6 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
   defp payment_message_share(%Payment{amount: amount, own_share: own_share}) do
     "own share: #{own_share}% = #{Money.multiply(amount, own_share)}"
   end
+
+  defp reply_context_ttl, do: Abrechnomat.Times.minutes(10)
 end
