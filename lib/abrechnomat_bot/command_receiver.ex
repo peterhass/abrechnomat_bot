@@ -5,12 +5,13 @@ defmodule AbrechnomatBot.CommandReceiver do
 
   defmodule ServerImpl do
     alias Telegex.Type.Update
+    alias AbrechnomatBot.TaskPool
 
     def init do
-      %{last_update_id: nil}
+      %{last_update_id: nil, pool: TaskPool.init()}
     end
 
-    def poll_updates(%{last_update_id: last_update_id} = state) do
+    def poll_updates(%{last_update_id: last_update_id, pool: pool} = state) do
       updates_offset =
         last_update_id
         |> case do
@@ -20,28 +21,25 @@ defmodule AbrechnomatBot.CommandReceiver do
 
       {:ok, updates} = Telegex.get_updates(offset: updates_offset)
 
-      if updates == [] do
-        {:ok, state}
-      else
-        {:ok, newest_update_id} = process_updates(updates)
-        {:ok, %{state | last_update_id: newest_update_id}}
-      end
+      {newest_update_id, new_pool} = queue_updates(updates, pool)
+      {:ok, %{state | last_update_id: newest_update_id || last_update_id, pool: new_pool}}
     end
 
-    def process_updates(updates) do
-      updates
-      |> List.pop_at(0)
-      |> _process_updates
+    def queue_updates(updates, pool) do
+      Enum.reduce(
+        updates,
+        {nil, pool},
+        fn update, {_, acc_pool} ->
+          queued_pool_fn = fn -> process_update(update) end
+
+          {update.update_id, TaskPool.run_or_queue(acc_pool, queued_pool_fn)}
+        end
+      )
     end
 
-    defp _process_updates({update, remaining_updates}) when remaining_updates == [] do
-      process_update(update)
-    end
-
-    defp _process_updates({update, remaining_updates}) do
-      {:ok, _update_id} = process_update(update)
-
-      process_updates(remaining_updates)
+    def task_exited(%{pool: pool} = state, pid) do
+      new_pool = TaskPool.run_queued_tasks(pool, {:replace, pid})
+      %{state | pool: new_pool}
     end
 
     def process_update(%Update{update_id: update_id} = update) do
@@ -84,6 +82,18 @@ defmodule AbrechnomatBot.CommandReceiver do
     {:ok, new_state} = ServerImpl.poll_updates(state)
 
     schedule_poll()
+    {:noreply, new_state}
+  end
+
+  @impl true
+  def handle_info({_ref, {:ok, _}}, state) do
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+    new_state = ServerImpl.task_exited(state, pid)
+
     {:noreply, new_state}
   end
 

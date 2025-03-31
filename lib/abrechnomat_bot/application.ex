@@ -4,15 +4,13 @@ defmodule AbrechnomatBot.Application do
   def start(_type, _args) do
     case db_migrate() do
       :ok ->
-        children = [
-          AbrechnomatBot.CommandReceiver,
-          AbrechnomatBot.Commands.MessageContextStore,
-          # systemd healthcheck 
-          :systemd.ready()
-        ]
-
         Supervisor.start_link(
-          children,
+          enabled_children([
+            AbrechnomatBot.CommandReceiver,
+            AbrechnomatBot.Commands.MessageContextStore,
+            AbrechnomatBot.TaskPool.Supervisor,
+            :systemd.ready()
+          ]),
           strategy: :one_for_one,
           name: AbrechnomatBot.Supervisor
         )
@@ -28,4 +26,20 @@ defmodule AbrechnomatBot.Application do
       _ -> AbrechnomatBot.Database.Migrations.run()
     end
   end
+
+  defp enabled_children(list) do
+    list
+    |> Enum.map(&enabled_child/1)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp enabled_child(child) when is_atom(child) do
+    case Application.get_env(:abrechnomat_bot, child)[:enable] do
+      nil -> child
+      true -> child
+      _ -> nil
+    end
+  end
+
+  defp enabled_child(child), do: child
 end
