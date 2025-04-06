@@ -7,6 +7,9 @@ defmodule AbrechnomatBot.PollingHandler do
     alias AbrechnomatBot.UpdateQueue
 
     def init do
+      # required to be allowed to poll again
+      {:ok, true} = Telegex.delete_webhook()
+
       %{last_update_id: nil}
     end
 
@@ -43,6 +46,7 @@ defmodule AbrechnomatBot.PollingHandler do
   # server callbacks
   @impl true
   def init(state) do
+    Logger.info("Starting polling ...")
     schedule_poll()
     {:ok, state}
   end

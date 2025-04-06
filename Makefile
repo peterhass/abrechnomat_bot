@@ -9,7 +9,7 @@ build:
 		--mount type=bind,source=./,target=/app \
 		--mount type=bind,source=$(dest),target=/rel \
 		--workdir=/app \
-		docker.io/elixir:1.17 \
+		docker.io/elixir:1.18 \
 		/bin/bash -c "mix deps.get --only $$MIX_ENV && mix release --overwrite --path /rel"
 
 service:

@@ -24,14 +24,12 @@ Calculates as little transactions as possible to pay everybody out.
 
 - `git clone https://github.com/peterhass/abrechnomat_bot.git repo`
 - `make build && make service`
+- Update config: `~/.config/abrechnomat_bot`
 - Setup database if needed: `DB_CREATE=true ~/.local/share/abrechnomat_bot/bin/abrechnomat_bot start_iex`
 - `systemctl --user start abrechnomat_bot.service`
 
-## TODO 
+## Ideas / future improvements
 
-- Respect edited messages?
 - Create pre-filled paypal links for final payment (user needs to configure their paypal account)
 - Create some way to tip bot provider (maybe after closing the bill)
 - Edge-case: Users might join or leave the group while there's an open bill
-- For more advanced use cases: Use telegram bot to link into a web app, authenticate with telegram
-    oauth, leave limitations at home

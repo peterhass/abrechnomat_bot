@@ -8,6 +8,7 @@ defmodule AbrechnomatBot.Application do
           enabled_children([
             AbrechnomatBot.UpdateQueue,
             AbrechnomatBot.PollingHandler,
+            AbrechnomatBot.WebhookHandler,
             AbrechnomatBot.Commands.MessageContextStore,
             AbrechnomatBot.TaskPool.Supervisor,
             :systemd.ready()
