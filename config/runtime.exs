@@ -8,4 +8,5 @@ telegram_token =
 
 config :telegex,
   token: telegram_token,
-  caller_adapter: {Finch, [receive_timeout: 5 * 1000]}
+  caller_adapter: {Finch, [receive_timeout: 5 * 1000]},
+  hook_adapter: Cowboy

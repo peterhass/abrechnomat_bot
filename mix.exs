@@ -35,7 +35,12 @@ defmodule AbrechnomatBot.MixProject do
       # Telegex + optional deps
       {:telegex, "~> 1.9.0-rc.0"},
       {:finch, "~> 0.19.0"},
-      {:multipart, "~> 0.4.0"}
+      {:multipart, "~> 0.4.0"},
+
+      # Telegex Webhook
+      {:plug, "~> 1.17"},
+      {:remote_ip, "~> 1.2"},
+      {:bandit, "~> 1.6"}
     ]
   end
 

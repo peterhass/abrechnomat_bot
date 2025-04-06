@@ -1,4 +1,4 @@
-defmodule AbrechnomatBot.CommandReceiver do
+defmodule AbrechnomatBot.UpdateQueue do
   require Logger
   use Task
   use GenServer
@@ -8,33 +8,13 @@ defmodule AbrechnomatBot.CommandReceiver do
     alias AbrechnomatBot.TaskPool
 
     def init do
-      %{last_update_id: nil, pool: TaskPool.init()}
+      %{pool: TaskPool.init()}
     end
 
-    def poll_updates(%{last_update_id: last_update_id, pool: pool} = state) do
-      updates_offset =
-        last_update_id
-        |> case do
-          nil -> nil
-          id -> id + 1
-        end
+    def queue_update(%{pool: pool} = state, update) do
+      queued_pool_fn = fn -> process_update(update) end
 
-      {:ok, updates} = Telegex.get_updates(offset: updates_offset)
-
-      {newest_update_id, new_pool} = queue_updates(updates, pool)
-      {:ok, %{state | last_update_id: newest_update_id || last_update_id, pool: new_pool}}
-    end
-
-    def queue_updates(updates, pool) do
-      Enum.reduce(
-        updates,
-        {nil, pool},
-        fn update, {_, acc_pool} ->
-          queued_pool_fn = fn -> process_update(update) end
-
-          {update.update_id, TaskPool.run_or_queue(acc_pool, queued_pool_fn)}
-        end
-      )
+      {:ok, %{state | pool: TaskPool.run_or_queue(pool, queued_pool_fn)}}
     end
 
     def task_exited(%{pool: pool} = state, pid) do
@@ -42,7 +22,7 @@ defmodule AbrechnomatBot.CommandReceiver do
       %{state | pool: new_pool}
     end
 
-    def process_update(%Update{update_id: update_id} = update) do
+    defp process_update(%Update{update_id: update_id} = update) do
       Logger.debug(fn ->
         {"[#{__MODULE__}] Process update: #{inspect(update, pretty: true)}",
          [update_id: update_id]}
@@ -70,18 +50,19 @@ defmodule AbrechnomatBot.CommandReceiver do
     GenServer.start_link(__MODULE__, ServerImpl.init(), name: __MODULE__)
   end
 
+  def queue(update) do
+    GenServer.cast(__MODULE__, {:queue, update})
+  end
+
   # server callbacks
   @impl true
   def init(state) do
-    schedule_poll()
     {:ok, state}
   end
 
   @impl true
-  def handle_info(:poll, state) do
-    {:ok, new_state} = ServerImpl.poll_updates(state)
-
-    schedule_poll()
+  def handle_cast({:queue, update}, state) do
+    {:ok, new_state} = ServerImpl.queue_update(state, update)
     {:noreply, new_state}
   end
 
@@ -95,9 +76,5 @@ defmodule AbrechnomatBot.CommandReceiver do
     new_state = ServerImpl.task_exited(state, pid)
 
     {:noreply, new_state}
-  end
-
-  defp schedule_poll() do
-    Process.send_after(self(), :poll, 1_000)
   end
 end

@@ -29,7 +29,6 @@ Calculates as little transactions as possible to pay everybody out.
 
 ## TODO 
 
-- CommandReceiver: Split up update fetching from update processing into separate GenServer messages
 - Respect edited messages?
 - Create pre-filled paypal links for final payment (user needs to configure their paypal account)
 - Create some way to tip bot provider (maybe after closing the bill)

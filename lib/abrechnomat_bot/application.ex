@@ -6,7 +6,8 @@ defmodule AbrechnomatBot.Application do
       :ok ->
         Supervisor.start_link(
           enabled_children([
-            AbrechnomatBot.CommandReceiver,
+            AbrechnomatBot.UpdateQueue,
+            AbrechnomatBot.PollingHandler,
             AbrechnomatBot.Commands.MessageContextStore,
             AbrechnomatBot.TaskPool.Supervisor,
             :systemd.ready()

@@ -22,7 +22,7 @@ defmodule AbrechnomatBot.TaskPool do
     do: %__MODULE__{
       tasks: %{},
       queue: :queue.new(),
-      max_tasks: System.schedulers_online(),
+      max_tasks: System.schedulers_online()
     }
 
   def run_or_queue(pool, task_fn) do
