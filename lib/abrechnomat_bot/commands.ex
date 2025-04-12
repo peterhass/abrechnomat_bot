@@ -9,7 +9,8 @@ defmodule AbrechnomatBot.Commands do
     BillStats,
     ExportPayments,
     CloseBill,
-    MigrateChat
+    MigrateChat,
+    SetLocale,
   }
 
   defcommand(HandlePayment, "/add_payment")
@@ -20,6 +21,7 @@ defmodule AbrechnomatBot.Commands do
   defcommand(CloseBill, "/close_bill")
   defcallback(CloseBill, "/close_bill")
   defcommand(ExportPayments, "/export_payments")
+  defcommand(SetLocale, "/set_locale")
 
   def process_update(update) do
     preprocess_update(update)

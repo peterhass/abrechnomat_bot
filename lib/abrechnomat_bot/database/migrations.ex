@@ -4,7 +4,7 @@ defmodule AbrechnomatBot.Database.Migrations do
   require Amnesia
   require Amnesia.Helper
 
-  @most_recent_version "1"
+  @most_recent_version "2"
 
   def run do
     get_version()
@@ -26,7 +26,19 @@ defmodule AbrechnomatBot.Database.Migrations do
     :ok
   end
 
+  def migration("1") do
+    IO.puts("Migrating to version 2 ...")
+    Database.Chat.create!()
+
+    Amnesia.transaction do
+      Migration.set_version("2")
+    end
+
+    migration("2")
+  end
+
   def migration("initialized") do
+    IO.puts("Migrating to version 1 ...")
     Amnesia.transaction do
       Migration.set_version("1")
     end

@@ -15,4 +15,8 @@ config :logger, :ex_syslogger_debug,
   facility: :local1,
   option: [:pid, :perror]
 
+config :ex_cldr,
+  default_locale: "en",
+  default_backend: AbrechnomatBot.Cldr
+
 import_config "#{Mix.env()}.exs"

@@ -32,6 +32,9 @@ defmodule AbrechnomatBot.MixProject do
       {:money, "~> 1.7.0"},
       {:phoenix_html, "~> 2.14.2"},
 
+      # Date & Time Localization
+      {:ex_cldr_dates_times, "~> 2.0"},
+
       # Telegex + optional deps
       {:telegex, "~> 1.9.0-rc.0"},
       {:finch, "~> 0.19.0"},
