@@ -10,7 +10,7 @@ defmodule AbrechnomatBot.Commands do
     ExportPayments,
     CloseBill,
     MigrateChat,
-    SetLocale,
+    SetLocale
   }
 
   defcommand(HandlePayment, "/add_payment")

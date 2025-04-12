@@ -39,6 +39,7 @@ defmodule AbrechnomatBot.Database.Migrations do
 
   def migration("initialized") do
     IO.puts("Migrating to version 1 ...")
+
     Amnesia.transaction do
       Migration.set_version("1")
     end

@@ -104,13 +104,12 @@ defdatabase AbrechnomatBot.Database do
     end
   end
 
-  deftable Chat, [:id, :locale, :currency],
-    type: :ordered_set do
+  deftable Chat, [:id, :locale, :currency], type: :ordered_set do
     @type t :: %Chat{
-      id: Integer.t(),
-      locale: String.t(),
-      currency: String.t()
-    }
+            id: Integer.t(),
+            locale: String.t(),
+            currency: String.t()
+          }
 
     def find(id) do
       Chat.read(id)

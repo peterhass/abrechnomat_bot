@@ -31,7 +31,9 @@ defmodule AbrechnomatBot.Commands.SetLocale do
     currencies = Enum.join(available_currencies(), ", ")
 
     cmd_usage = "/set_locale [locale] [currency]"
-    text = "Configure locale settings for the current chat. Valid locales: #{locales}; Valid currencies: #{currencies}"
+
+    text =
+      "Configure locale settings for the current chat. Valid locales: #{locales}; Valid currencies: #{currencies}"
 
     ~E"""
     <code><%= cmd_usage %></code>
@@ -44,10 +46,10 @@ defmodule AbrechnomatBot.Commands.SetLocale do
          {text, %Telegex.Type.Update{message: %{message_id: message_id, chat: %{id: chat_id}}}}
        ) do
     input_parts = String.split(text, " ", trim: true)
-    
+
     with [raw_locale, raw_currency] <- input_parts,
-      {:ok, locale} <- parse_locale(raw_locale),
-      {:ok, currency} <- parse_currency(raw_currency) do
+         {:ok, locale} <- parse_locale(raw_locale),
+         {:ok, currency} <- parse_currency(raw_currency) do
       {:ok, {locale, currency, chat_id, message_id}}
     else
       _ -> {:error, :unknown, {chat_id, message_id}}
@@ -63,7 +65,6 @@ defmodule AbrechnomatBot.Commands.SetLocale do
       false -> {:error}
     end
   end
-
 
   defp parse_currency(input_currency) do
     currency = String.upcase(input_currency)

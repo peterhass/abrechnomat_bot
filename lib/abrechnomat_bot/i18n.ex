@@ -10,21 +10,21 @@ defmodule AbrechnomatBot.I18n do
   end
 
   def datetime!(
-    datetime,
-    %Context{locale: locale},
-    options \\ []
-  ) do
+        datetime,
+        %Context{locale: locale},
+        options \\ []
+      ) do
     Cldr.DateTime.to_string!(datetime, Keyword.merge([locale: locale], options))
   end
 
   def money!(
-    amount,
-    %Context{locale: locale, currency: currency},
-    options \\ []
-  ) do
+        amount,
+        %Context{locale: locale, currency: currency},
+        options \\ []
+      ) do
     amount
     |> Money.to_decimal()
-    |> Decimal.to_float
-    |> Cldr.Number.to_string!(Keyword.merge([locale: locale, currency: currency], options))   
+    |> Decimal.to_float()
+    |> Cldr.Number.to_string!(Keyword.merge([locale: locale, currency: currency], options))
   end
 end
