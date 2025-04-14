@@ -1,8 +1,21 @@
 defmodule AbrechnomatBot.Commands.HandlePaymentWizard.Parser do
-  def parse_amount(text) do
-    case Money.parse(text, :EUR, separator: ".", delimiter: ",") do
-      {:ok, money} -> {:ok, money}
-      :error -> :error
+  alias AbrechnomatBot.Cldr
+
+  def parse_amount(text, i18n) do
+    first_decimal =
+      Cldr.Number.scan(text, locale: i18n.locale, number: :decimal)
+      |> Enum.find(fn item ->
+        case item do
+          %Decimal{} -> true
+          _ -> false
+        end
+      end)
+
+    with decimal when not is_nil(decimal) <- first_decimal,
+         {:ok, money} <- Money.parse(decimal, i18n.currency) do
+      {:ok, money}
+    else
+      _ -> :error
     end
   end
 
