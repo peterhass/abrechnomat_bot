@@ -301,10 +301,7 @@ defmodule AbrechnomatBot.Commands.HandlePaymentWizard do
          nadia_user
        ) do
     Amnesia.transaction do
-      i18n =
-        chat_id
-        |> Chat.find_or_default()
-        |> Chat.i18n()
+      i18n = chat_i18n(chat_id)
 
       Bill.find_or_create_by_chat(chat_id)
       |> Bill.add_payment(full_user_resolve(nadia_user), date, amount, own_share, text)

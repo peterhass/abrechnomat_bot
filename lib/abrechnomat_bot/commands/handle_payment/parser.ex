@@ -1,26 +1,31 @@
 defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
+  alias AbrechnomatBot.Cldr
+
   @handle_payment_regex ~r"
         ^
         \s*
-        (?<amount>[0-9]*([\.|\,][0-9]*)?)\s*
+        (?<amount>[0-9\.\,]*)\s*
         (\((?<own_share>[0-9]{1,2})%?\))?\s*
         (EUR|€)?\s*
         (?<text>.*)?
       "x
 
-  def parse({
-        _,
-        %Telegex.Type.Update{
-          message: %{
-            entities: entities,
-            message_id: message_id,
-            date: date,
-            chat: %{id: chat_id},
-            from: from_user,
-            text: message_text
+  def parse(
+        {
+          _,
+          %Telegex.Type.Update{
+            message: %{
+              entities: entities,
+              message_id: message_id,
+              date: date,
+              chat: %{id: chat_id},
+              from: from_user,
+              text: message_text
+            }
           }
-        }
-      }) do
+        },
+        i18n
+      ) do
     [remaining_text, user] = get_target_user(message_text, entities)
 
     %{"amount" => amount, "own_share" => own_share, "text" => text} =
@@ -30,7 +35,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
       message_id: message_id,
       chat_id: chat_id,
       date: DateTime.from_unix!(date),
-      amount: parse_amount(amount),
+      amount: parse_amount(amount, i18n),
       own_share: parse_share(own_share),
       user: user || from_user,
       text: text
@@ -109,10 +114,21 @@ defmodule AbrechnomatBot.Commands.HandlePayment.Parser do
     end
   end
 
-  defp parse_amount(amount) do
-    case Money.parse(amount, :EUR, separator: ".", delimiter: ",") do
-      {:ok, money} -> money
-      :error -> :error
+  defp parse_amount(text, i18n) do
+    first_decimal =
+      Cldr.Number.scan(text, locale: i18n.locale, number: :decimal)
+      |> Enum.find(fn item ->
+        case item do
+          %Decimal{} -> true
+          _ -> false
+        end
+      end)
+
+    with decimal when not is_nil(decimal) <- first_decimal,
+         {:ok, money} <- Money.parse(decimal, i18n.currency) do
+      money
+    else
+      _ -> :error
     end
   end
 end

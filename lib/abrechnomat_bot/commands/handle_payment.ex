@@ -1,13 +1,25 @@
 defmodule AbrechnomatBot.Commands.HandlePayment do
   require Amnesia
   require Amnesia.Helper
-  alias AbrechnomatBot.Database.{Bill, Payment, User}
+  alias AbrechnomatBot.Database.{Chat, Bill, Payment, User}
+  alias AbrechnomatBot.I18n
   alias __MODULE__.Parser
   import Phoenix.HTML
 
-  def command(args) do
+  def command(
+        {
+          _,
+          %Telegex.Type.Update{
+            message: %{
+              chat: %{id: chat_id}
+            }
+          }
+        } = args
+      ) do
+    i18n = chat_i18n(chat_id, new_transaction: true)
+
     args
-    |> Parser.parse()
+    |> Parser.parse(i18n)
     |> inject_user
     |> execute
   end
@@ -43,9 +55,11 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
          }}
       ) do
     Amnesia.transaction do
+      i18n = chat_i18n(chat_id)
+
       Bill.find_or_create_by_chat(chat_id)
       |> Bill.add_payment(full_user_resolve(user), date, amount, own_share, text)
-      |> payment_message
+      |> payment_message(i18n)
       |> reply(chat_id, message_id)
     end
   end
@@ -85,15 +99,16 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
   end
 
   def payment_message(
-        %Payment{id: id, user: user, date: date, amount: amount, text: text} = payment
+        %Payment{id: id, user: user, date: date, amount: amount, text: text} = payment,
+        i18n
       ) do
     [
       "Added following payment ...",
       "ID: #{id}",
       Abrechnomat.Users.to_short_string(user),
-      "#{date}",
-      "#{amount}",
-      payment_message_share(payment),
+      "#{I18n.datetime!(date, i18n)}",
+      "#{I18n.money!(amount, i18n)}",
+      payment_message_share(payment, i18n),
       "Text: #{text}"
     ]
     |> Enum.reject(&is_nil/1)
@@ -102,11 +117,28 @@ defmodule AbrechnomatBot.Commands.HandlePayment do
     |> safe_to_string
   end
 
-  defp payment_message_share(%Payment{amount: _, own_share: own_share}) when is_nil(own_share) do
+  defp payment_message_share(%Payment{amount: _, own_share: own_share}, _i18n)
+       when is_nil(own_share) do
     nil
   end
 
-  defp payment_message_share(%Payment{amount: amount, own_share: own_share}) do
-    "own share: #{own_share}% = #{Money.multiply(amount, own_share)}"
+  defp payment_message_share(%Payment{amount: amount, own_share: own_share}, i18n) do
+    localized_share_amount =
+      Money.multiply(amount, own_share)
+      |> I18n.money!(i18n)
+
+    "own share: #{own_share}% = #{localized_share_amount}"
+  end
+
+  defp chat_i18n(chat_id, new_transaction: true) do
+    Amnesia.transaction do
+      chat_i18n(chat_id)
+    end
+  end
+
+  defp chat_i18n(chat_id) do
+    chat_id
+    |> Chat.find_or_default()
+    |> Chat.i18n()
   end
 end
