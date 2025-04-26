@@ -32,6 +32,9 @@ defmodule AbrechnomatBot.MixProject do
       {:money, "~> 1.7.0"},
       {:phoenix_html, "~> 2.14.2"},
 
+      # Rely on zoneinfo from host OS
+      {:zoneinfo, "~> 0.1.0"},
+
       # Date & Time Localization
       {:ex_cldr_dates_times, "~> 2.0"},
 

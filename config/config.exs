@@ -15,6 +15,9 @@ config :logger, :ex_syslogger_debug,
   facility: :local1,
   option: [:pid, :perror]
 
+config :elixir,
+  time_zone_database: Zoneinfo.TimeZoneDatabase
+
 config :ex_cldr,
   default_locale: "en",
   default_backend: AbrechnomatBot.Cldr

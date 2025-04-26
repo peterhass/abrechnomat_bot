@@ -4,7 +4,7 @@ defmodule AbrechnomatBot.Database.Migrations do
   require Amnesia
   require Amnesia.Helper
 
-  @most_recent_version "2"
+  @most_recent_version "3"
 
   def run do
     get_version()
@@ -22,17 +22,42 @@ defmodule AbrechnomatBot.Database.Migrations do
     Amnesia.transaction do
       Migration.set_version(@most_recent_version)
     end
+  end
 
-    :ok
+  def migration("2") do
+    IO.puts("Migrating to version 3 ...")
+
+    :ok =
+      Amnesia.Table.transform(
+        Database.Chat,
+        [:id, :locale, :currency, :time_zone],
+        fn existing_values ->
+          case existing_values do
+            {mod, id, locale, currency} ->
+              {mod, id, locale, currency, "UTC"}
+
+            values ->
+              values
+          end
+        end
+      )
+
+    :ok =
+      Amnesia.transaction do
+        Migration.set_version("2")
+      end
+
+    migration("3")
   end
 
   def migration("1") do
     IO.puts("Migrating to version 2 ...")
     Database.Chat.create!()
 
-    Amnesia.transaction do
-      Migration.set_version("2")
-    end
+    :ok =
+      Amnesia.transaction do
+        Migration.set_version("2")
+      end
 
     migration("2")
   end
@@ -40,9 +65,10 @@ defmodule AbrechnomatBot.Database.Migrations do
   def migration("initialized") do
     IO.puts("Migrating to version 1 ...")
 
-    Amnesia.transaction do
-      Migration.set_version("1")
-    end
+    :ok =
+      Amnesia.transaction do
+        Migration.set_version("1")
+      end
 
     Database.User.create!()
 

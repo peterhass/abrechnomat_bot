@@ -3,7 +3,7 @@ use Amnesia
 defdatabase AbrechnomatBot.Database do
   deftable Migration, [:id, :date], type: :ordered_set do
     def get_current_version do
-      case Migration.first() do
+      case Migration.last() do
         nil -> nil
         %Migration{id: id} -> id
       end
@@ -12,6 +12,10 @@ defdatabase AbrechnomatBot.Database do
     def set_version(version) do
       %Migration{id: version, date: NaiveDateTime.utc_now()}
       |> Migration.write()
+      |> case do
+        %{} -> :ok
+        value -> {:error, value}
+      end
     end
   end
 
@@ -104,21 +108,21 @@ defdatabase AbrechnomatBot.Database do
     end
   end
 
-  deftable Chat, [:id, :locale, :currency], type: :ordered_set do
+  deftable Chat, [:id, :locale, :currency, :time_zone], type: :ordered_set do
     @type t :: %Chat{
             id: Integer.t(),
             locale: String.t(),
-            currency: String.t()
+            currency: String.t(),
+            time_zone: String.t()
           }
 
-    def find(id) do
-      Chat.read(id)
-    end
-
     def find_or_default(id) do
-      case find(id) do
-        nil -> %Chat{id: id, locale: "en", currency: "eur"}
-        chat -> chat
+      case Chat.read(id) do
+        nil ->
+          %Chat{id: id, locale: "en", currency: "eur", time_zone: "UTC"}
+
+        %{} = chat ->
+          chat
       end
     end
 

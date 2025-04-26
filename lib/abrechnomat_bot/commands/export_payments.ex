@@ -1,7 +1,8 @@
 defmodule AbrechnomatBot.Commands.ExportPayments do
   require Amnesia
   require Amnesia.Helper
-  alias AbrechnomatBot.Database.{Bill, Payment}
+  alias AbrechnomatBot.Database.{Chat, Bill, Payment}
+  alias AbrechnomatBot.I18n
 
   def command(args) do
     args
@@ -20,13 +21,18 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
   end
 
   defp execute_for_bill(%{id: bill_id}, {chat_id, message_id}) do
+    i18n =
+      chat_id
+      |> Chat.find_or_default()
+      |> Chat.i18n()
+
     payments = Payment.by_bill(bill_id)
 
     fields = ~w(id user date amount own_share text)a
 
     payment_lines =
       payments
-      |> Enum.map(&payment_to_line(&1, fields))
+      |> Enum.map(&payment_to_line(&1, fields, i18n))
 
     file_path = AbrechnomatBot.TempFiles.get_temp_file(export_file_name())
     file = File.open!(file_path, [:utf8, :write])
@@ -58,17 +64,27 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     Enum.map(fields, &Map.get(strings, &1))
   end
 
-  defp payment_to_line(payment, keys) do
+  defp payment_to_line(payment, keys, i18n) do
     Enum.map(keys, fn key ->
-      format_payment_attribute(key, Map.get(payment, key))
+      format_payment_attribute(key, Map.get(payment, key), i18n)
     end)
   end
 
-  defp format_payment_attribute(:user, user) do
+  defp format_payment_attribute(:user, user, _i18n) do
     Abrechnomat.Users.to_short_string(user)
   end
 
-  defp format_payment_attribute(_key, value) do
+  defp format_payment_attribute(:date, date, i18n) do
+    date
+    |> I18n.datetime!(i18n)
+  end
+
+  defp format_payment_attribute(:amount, amount, i18n) do
+    amount
+    |> I18n.money!(i18n, currency_symbol: :none)
+  end
+
+  defp format_payment_attribute(_key, value, _i18n) do
     to_string(value)
   end
 

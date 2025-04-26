@@ -4,7 +4,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
   alias AbrechnomatBot.I18n
 
   test "amount and text for another user" do
-    i18n = I18n.init(%{currency: "EUR", locale: "de"})
+    i18n = I18n.init(%{currency: "EUR", locale: "de", time_zone: "UTC"})
 
     update = build_update("/add_payment Christina 54,23 Lebensmittel")
 
@@ -26,7 +26,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
   end
 
   test "can deal with german number formatting" do
-    i18n = I18n.init(%{currency: "EUR", locale: "de"})
+    i18n = I18n.init(%{currency: "EUR", locale: "de", time_zone: "UTC"})
 
     update = build_update("/add_payment Christina 5.423,99 Lebensmittel")
 
@@ -48,7 +48,7 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
   end
 
   test "can deal with english number formatting" do
-    i18n = I18n.init(%{currency: "EUR", locale: "en"})
+    i18n = I18n.init(%{currency: "EUR", locale: "en", time_zone: "UTC"})
 
     update = build_update("/add_payment Christina 5,423.99 Lebensmittel")
 

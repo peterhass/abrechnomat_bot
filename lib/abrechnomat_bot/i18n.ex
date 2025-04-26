@@ -1,20 +1,25 @@
 defmodule AbrechnomatBot.I18n do
   defmodule Context do
-    defstruct [:locale, :currency]
+    defstruct [:locale, :currency, :time_zone]
   end
 
   alias AbrechnomatBot.Cldr
 
-  def init(%{locale: locale, currency: currency}) do
-    %Context{locale: locale, currency: currency}
+  def init(%{
+        locale: locale,
+        currency: currency,
+        time_zone: time_zone
+      }) do
+    %Context{locale: locale, currency: currency, time_zone: time_zone}
   end
 
   def datetime!(
         datetime,
-        %Context{locale: locale},
+        %Context{locale: locale, time_zone: time_zone},
         options \\ []
       ) do
-    Cldr.DateTime.to_string!(datetime, Keyword.merge([locale: locale], options))
+    local_datetime = DateTime.shift_zone!(datetime, time_zone)
+    Cldr.DateTime.to_string!(local_datetime, Keyword.merge([locale: locale], options))
   end
 
   def money!(

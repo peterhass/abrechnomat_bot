@@ -10,14 +10,19 @@ defmodule AbrechnomatBot.Commands.SetLocale do
     |> execute
   end
 
-  defp execute({:ok, {locale, currency, chat_id, message_id}}) do
+  defp execute({:ok, {locale, currency, time_zone, chat_id, message_id}}) do
     Amnesia.transaction do
       chat = Chat.find_or_default(chat_id)
 
-      %{chat | currency: currency, locale: locale}
-      |> Chat.write()
+      %{} =
+        %{chat | currency: currency, locale: locale, time_zone: time_zone}
+        |> Chat.write()
 
-      reply("Set locale '#{locale}' and currency '#{currency}'", chat_id, message_id)
+      reply(
+        "Set locale to '#{locale}', currency to '#{currency}' and time-zone to '#{time_zone}'",
+        chat_id,
+        message_id
+      )
     end
   end
 
@@ -30,14 +35,29 @@ defmodule AbrechnomatBot.Commands.SetLocale do
     locales = Enum.join(available_locales(), ", ")
     currencies = Enum.join(available_currencies(), ", ")
 
-    cmd_usage = "/set_locale [locale] [currency]"
+    time_zones =
+      Zoneinfo.time_zones()
+      |> Enum.filter(fn time_zone ->
+        patterns = ["Europe", "Asia", "America"]
+        String.starts_with?(time_zone, patterns)
+      end)
+      |> Enum.take_random(10)
+      |> Enum.map(fn time_zone -> "- #{time_zone}" end)
+      |> Enum.join("\n")
 
-    text =
-      "Configure locale settings for the current chat. Valid locales: #{locales}; Valid currencies: #{currencies}"
+    cmd_usage = "/set_locale [locale] [currency] [time_zone]"
 
     ~E"""
     <code><%= cmd_usage %></code>
-    <%= text %>
+
+    Configure locale settings for the current chat.
+
+    Valid locales: <%= locales %>
+    Valid currencies: <%= currencies %>
+    Valid time-zones: 
+    - ...
+    <%= time_zones %>
+    - ...
     """
     |> safe_to_string
   end
@@ -47,10 +67,11 @@ defmodule AbrechnomatBot.Commands.SetLocale do
        ) do
     input_parts = String.split(text, " ", trim: true)
 
-    with [raw_locale, raw_currency] <- input_parts,
+    with [raw_locale, raw_currency, raw_time_zone] <- input_parts,
          {:ok, locale} <- parse_locale(raw_locale),
-         {:ok, currency} <- parse_currency(raw_currency) do
-      {:ok, {locale, currency, chat_id, message_id}}
+         {:ok, currency} <- parse_currency(raw_currency),
+         {:ok, time_zone} <- parse_time_zone(raw_time_zone) do
+      {:ok, {locale, currency, time_zone, chat_id, message_id}}
     else
       _ -> {:error, :unknown, {chat_id, message_id}}
     end
@@ -72,6 +93,14 @@ defmodule AbrechnomatBot.Commands.SetLocale do
     Enum.member?(available_currencies(), currency)
     |> case do
       true -> {:ok, currency}
+      false -> {:error}
+    end
+  end
+
+  defp parse_time_zone(input_zone) do
+    Zoneinfo.valid_time_zone?(input_zone)
+    |> case do
+      true -> {:ok, input_zone}
       false -> {:error}
     end
   end
