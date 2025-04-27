@@ -59,6 +59,8 @@ defmodule AbrechnomatBot.Commands.UserCollector do
   def collect_users(%Update{message: %{entities: entities}} = update) do
     reducer = fn entity, acc ->
       case entity do
+        %{type: "text_mention", user: %Telegex.Type.User{} = user} -> [user | acc]
+        # TODO: check if still needed after migration to Telegex
         %{type: "text_mention", user: user} -> [struct(Telegex.Type.User, user) | acc]
         _ -> acc
       end
