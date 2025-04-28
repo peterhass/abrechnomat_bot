@@ -44,7 +44,7 @@ defmodule AbrechnomatBot.Database.Migrations do
 
     :ok =
       Amnesia.transaction do
-        Migration.set_version("2")
+        Migration.set_version("3")
       end
 
     migration("3")
