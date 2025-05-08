@@ -84,6 +84,11 @@ defmodule AbrechnomatBot.Commands.ExportPayments do
     |> I18n.money!(i18n, currency_symbol: :none)
   end
 
+  defp format_payment_attribute(:own_share, own_share, i18n) when not is_nil(own_share) do
+    own_share
+    |> I18n.number!(i18n)
+  end
+
   defp format_payment_attribute(_key, value, _i18n) do
     to_string(value)
   end

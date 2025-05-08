@@ -29,4 +29,17 @@ defmodule AbrechnomatBot.I18nTest do
       assert I18n.money!(amount, i18n, currency_symbol: :none) == "12,01"
     end
   end
+
+  describe "number!" do
+    test "uses correct decimal separator" do
+      i18n =
+        I18n.init(%{
+          locale: "de",
+          currency: "EUR",
+          time_zone: "Europe/Berlin"
+        })
+
+      assert I18n.number!(3.4, i18n) == "3,4"
+    end
+  end
 end

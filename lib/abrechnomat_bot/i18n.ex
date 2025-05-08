@@ -32,4 +32,11 @@ defmodule AbrechnomatBot.I18n do
     |> Decimal.to_float()
     |> Cldr.Number.to_string!(Keyword.merge([locale: locale, currency: currency], options))
   end
+
+  def number!(
+        number,
+        %Context{locale: locale}
+      ) do
+    Cldr.Number.to_string!(number, locale: locale)
+  end
 end
