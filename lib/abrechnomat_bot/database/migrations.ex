@@ -16,7 +16,7 @@ defmodule AbrechnomatBot.Database.Migrations do
     Amnesia.Schema.destroy()
     Amnesia.Schema.create()
     Amnesia.start()
-    Database.create!(disk: [node()])
+    Database.create!(default_create_options())
     :ok = Database.wait(15000)
 
     Amnesia.transaction do
@@ -52,7 +52,7 @@ defmodule AbrechnomatBot.Database.Migrations do
 
   def migration("1") do
     IO.puts("Migrating to version 2 ...")
-    Database.Chat.create!()
+    Database.Chat.create!(default_create_options())
 
     :ok =
       Amnesia.transaction do
@@ -70,7 +70,7 @@ defmodule AbrechnomatBot.Database.Migrations do
         Migration.set_version("1")
       end
 
-    Database.User.create!()
+    Database.User.create!(default_create_options())
 
     migration("1")
   end
@@ -90,5 +90,9 @@ defmodule AbrechnomatBot.Database.Migrations do
 
         nil
     end
+  end
+
+  defp default_create_options do
+    [disk: [node()]]
   end
 end
