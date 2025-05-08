@@ -1,9 +1,10 @@
 defmodule AbrechnomatBot.Commands.BillStats do
   require Amnesia
   require Amnesia.Helper
-  alias AbrechnomatBot.Database.{Bill, Payment, User}
+  alias AbrechnomatBot.Database.{Bill, Payment, User, Chat}
   alias Abrechnomat.Billing
   alias Abrechnomat.Users
+  alias AbrechnomatBot.I18n
 
   def command(args) do
     args
@@ -18,6 +19,10 @@ defmodule AbrechnomatBot.Commands.BillStats do
           reply("No active bill", chat_id, message_id)
 
         %{id: bill_id} ->
+          i18n =
+            Chat.find_or_default(chat_id)
+            |> Chat.i18n()
+
           payments = Payment.by_bill(bill_id)
 
           ast = Billing.payment_to_ast(payments)
@@ -35,13 +40,13 @@ defmodule AbrechnomatBot.Commands.BillStats do
               transaction_message =
                 transactions
                 |> transactions_with_resolved_users
-                |> Enum.map(&transaction_text/1)
+                |> Enum.map(&transaction_text(&1, i18n))
                 |> Enum.join("\n")
 
               sums_message =
                 user_balances
                 |> user_sums_with_resolved_users
-                |> Enum.map(&user_sum_text/1)
+                |> Enum.map(&user_sum_text(&1, i18n))
                 |> Enum.join("\n")
 
               [
@@ -75,16 +80,16 @@ defmodule AbrechnomatBot.Commands.BillStats do
     end)
   end
 
-  defp user_sum_text({user, amount}) do
+  defp user_sum_text({user, amount}, i18n) do
     if Money.positive?(amount) do
-      "#{Users.to_short_string(user)} owes #{amount} to the group"
+      "#{Users.to_short_string(user)} owes #{I18n.money!(amount, i18n)} to the group"
     else
-      "the group owes #{Users.to_short_string(user)} #{Money.abs(amount)}"
+      "the group owes #{Users.to_short_string(user)} #{Money.abs(amount) |> I18n.money!(i18n)}"
     end
   end
 
-  defp transaction_text({from_user, to_user, amount}) do
-    "#{Users.to_short_string(from_user)} -> #{Users.to_short_string(to_user)} : #{amount}"
+  defp transaction_text({from_user, to_user, amount}, i18n) do
+    "#{Users.to_short_string(from_user)} -> #{Users.to_short_string(to_user)} : #{I18n.money!(amount, i18n)}"
   end
 
   defp shares_error_message(:multiple_users_needed) do
