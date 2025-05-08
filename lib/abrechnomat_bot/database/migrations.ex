@@ -78,7 +78,7 @@ defmodule AbrechnomatBot.Database.Migrations do
   def migration(_), do: :ok
 
   defp get_version do
-    case Database.wait(1000) do
+    case Migration.wait(1000) do
       :ok ->
         Amnesia.transaction(&Migration.get_current_version/0)
 
