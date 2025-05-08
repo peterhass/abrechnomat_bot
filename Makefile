@@ -6,6 +6,7 @@ build:
 	mkdir -p $(dest)
 	podman run \
 		-e MIX_ENV=prod \
+		-e MIX_BUILD_PATH=/build \
 		--mount type=bind,source=./,target=/app \
 		--mount type=bind,source=$(dest),target=/rel \
 		--workdir=/app \
