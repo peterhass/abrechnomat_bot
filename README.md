@@ -1,3 +1,6 @@
+
+![ChatGPT Image May 8, 2025, 08_08_57 PM (1)](https://github.com/user-attachments/assets/e9c569a8-5bf5-4ed5-b2c6-aa174076a92d)
+
 # AbrechnomatBot
 
 A Telegram bot for bill splitting. Supports an unlimited number of debtors/creditors on a bill and calculates the minimum number of transactions necessary to settle everyone's accounts. The bot supports various currencies and locales, allowing users to manage expenses in their preferred settings. Bill exports are designed for easy import into spreadsheet applications like Google Sheets.
