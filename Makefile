@@ -10,6 +10,7 @@ build:
 		--mount type=bind,source=./,target=/app \
 		--mount type=bind,source=$(dest),target=/rel \
 		--workdir=/app \
+		--rm \
 		docker.io/elixir:1.18 \
 		/bin/bash -c "mix deps.get --only $$MIX_ENV && mix release --overwrite --path /rel"
 
