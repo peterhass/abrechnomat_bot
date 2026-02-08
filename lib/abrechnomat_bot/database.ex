@@ -80,8 +80,6 @@ defdatabase AbrechnomatBot.Database do
         text: text
       }
 
-      # TODO: remove
-      IO.puts("[DB] add_payment #{inspect(payment, pretty: true)}")
       payment |> Payment.write()
     end
   end
