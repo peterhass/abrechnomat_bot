@@ -47,6 +47,28 @@ defmodule AbrechnomatBot.Commands.HandlePayment.ParserTest do
               }}
   end
 
+  test "can deal with own share" do
+    i18n = I18n.init(%{currency: "EUR", locale: "de", time_zone: "UTC"})
+
+    update = build_update("/add_payment Christina 5.423,99 (50%) Lebensmittel")
+
+    assert Parser.parse({" Christina 54 Lebensmittel", update}, i18n) ==
+             {:ok,
+              %{
+                message_id: 8,
+                chat_id: -431_581_683,
+                date: ~U[2020-08-11 18:51:34Z],
+                amount: %Money{amount: 542_399, currency: :EUR},
+                own_share: 0.5,
+                text: "Lebensmittel",
+                user: %{
+                  first_name: "Christina",
+                  id: 401_139_989,
+                  is_bot: false
+                }
+              }}
+  end
+
   test "can deal with english number formatting" do
     i18n = I18n.init(%{currency: "EUR", locale: "en", time_zone: "UTC"})
 
