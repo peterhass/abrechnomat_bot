@@ -40,8 +40,8 @@ defmodule Abrechnomat.BillingTest do
     ast = [
       {:all, {@hansi_id, Money.new(2000, :EUR)}},
       {:all, {@peter_id, Money.new(3000, :EUR)}},
-      {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
-      {:all_but, {@christl_id, Money.new(1000, :EUR)}}
+      {:all_but, {@hansi_id, Money.new(9000, :EUR), 0.5}},
+      {:all_but, {@christl_id, Money.new(1000, :EUR), 0.5}}
     ]
 
     expected_user_sums = %{
@@ -57,7 +57,7 @@ defmodule Abrechnomat.BillingTest do
     test "one single user" do
       ast = [
         {:all, {@hansi_id, Money.new(2000, :EUR)}},
-        {:all_but, {@hansi_id, Money.new(9000, :EUR)}}
+        {:all_but, {@hansi_id, Money.new(9000, :EUR), 0.5}}
       ]
 
       assert Billing.user_shares_from_ast(ast) == {:error, :multiple_users_needed}
@@ -67,8 +67,8 @@ defmodule Abrechnomat.BillingTest do
       ast = [
         {:all, {@hansi_id, Money.new(2000, :EUR)}},
         {:all, {@peter_id, Money.new(3000, :EUR)}},
-        {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
-        {:all_but, {@christl_id, Money.new(1000, :EUR)}}
+        {:all_but, {@hansi_id, Money.new(9000, :EUR), 1}},
+        {:all_but, {@christl_id, Money.new(1000, :EUR), 1}}
       ]
 
       expected_shares = %{
@@ -78,6 +78,22 @@ defmodule Abrechnomat.BillingTest do
       }
 
       assert Billing.user_shares_from_ast(ast) == expected_shares
+    end
+
+    test "handles rounding fairly with own_share payments" do
+      ast = [
+        {:all_but, {@peter_id, Money.new(197, :EUR), 0.5}},
+        {:all_but, {@hansi_id, Money.new(25, :EUR), 0.5}},
+        {:all_but, {@hansi_id, Money.new(1, :EUR), 0.5}}
+      ]
+
+      result = Billing.user_shares_from_ast(ast)
+
+      total = result |> Map.values() |> Enum.reduce(Money.new(0, :EUR), &Money.add/2)
+      assert total == Money.new(223, :EUR)
+
+      assert result[@peter_id] == Money.new(112, :EUR)
+      assert result[@hansi_id] == Money.new(111, :EUR)
     end
   end
 
@@ -89,11 +105,12 @@ defmodule Abrechnomat.BillingTest do
       %{user: @christl, amount: Money.new(1000, :EUR), own_share: 0}
     ]
 
+    # others_share = 1 - own_share
     expected_ast = [
       {:all, {@hansi_id, Money.new(2000, :EUR)}},
       {:all, {@peter_id, Money.new(3000, :EUR)}},
-      {:all_but, {@hansi_id, Money.new(9000, :EUR)}},
-      {:all_but, {@christl_id, Money.new(1000, :EUR)}}
+      {:all_but, {@hansi_id, Money.new(10000, :EUR), 0.9}},
+      {:all_but, {@christl_id, Money.new(1000, :EUR), 1}}
     ]
 
     assert Billing.payment_to_ast(payments) == expected_ast
@@ -139,6 +156,32 @@ defmodule Abrechnomat.BillingTest do
     assert sums[@hansi_id] == Money.new(-4000, :EUR)
     assert sums[@herbert_id] == Money.new(8000, :EUR)
     assert sums[@christina_id] == Money.new(-1000, :EUR)
+  end
+
+  test "integration - no cent lost with own_share payments" do
+    payments = [
+      %{user: @peter, amount: Money.new(197, :EUR), own_share: 0.5},
+      %{user: @hansi, amount: Money.new(25, :EUR), own_share: 0.5},
+      %{user: @hansi, amount: Money.new(1, :EUR), own_share: 0.5}
+    ]
+
+    ast = Billing.payment_to_ast(payments)
+    user_shares = Billing.user_shares_from_ast(ast)
+    user_sums = Billing.user_sums_from_ast(ast)
+    user_balances = Billing.balances_by_user(user_sums, user_shares)
+    transactions = Billing.transactions(user_balances)
+
+    sums = account_sums(transactions)
+
+    total_spent =
+      user_shares
+      |> Map.values()
+      |> Enum.reduce(&Money.add/2)
+
+    assert total_spent == Money.new(223, :EUR), "total adds up"
+
+    assert sums[@peter_id] == Money.new(85, :EUR)
+    assert sums[@hansi_id] == Money.new(-85, :EUR)
   end
 
   def account_sums(transactions) do

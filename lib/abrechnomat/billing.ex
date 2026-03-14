@@ -85,17 +85,24 @@ defmodule Abrechnomat.Billing do
   end
 
   def user_sums_from_ast(ast) do
-    Enum.reduce(ast, %{}, fn {_, {user, amount}}, acc ->
-      Map.new([{user, amount}])
-      |> Enum.into(%{})
-      |> Map.merge(acc, &map_merge_money_add/3)
+    Enum.reduce(ast, %{}, fn
+      {:all, {user, amount}}, acc ->
+        Map.new([{user, amount}])
+        |> Enum.into(%{})
+        |> Map.merge(acc, &map_merge_money_add/3)
+
+      {:all_but, {user, amount, _others_share}}, acc ->
+        Map.new([{user, amount}])
+        |> Enum.into(%{})
+        |> Map.merge(acc, &map_merge_money_add/3)
     end)
   end
 
   def user_shares_from_ast(ast) do
     users =
-      Enum.reduce(ast, MapSet.new(), fn {_, {user, _}}, acc ->
-        MapSet.put(acc, user)
+      Enum.reduce(ast, MapSet.new(), fn
+        {:all, {user, _}}, acc -> MapSet.put(acc, user)
+        {:all_but, {user, _, _}}, acc -> MapSet.put(acc, user)
       end)
       |> MapSet.to_list()
 
@@ -114,10 +121,18 @@ defmodule Abrechnomat.Billing do
         |> Enum.into(%{})
         |> Map.merge(acc, &map_merge_money_add/3)
 
-      {:all_but, {user, amount}}, acc ->
-        users
-        |> Enum.reject(&(&1 == user))
-        |> Stream.zip(Money.divide(amount, Enum.count(users) - 1))
+      {:all_but, {user, amount, others_share}}, acc ->
+        # others_share is the fraction to be distributed to other users
+        remainder = Money.multiply(amount, others_share)
+        payer_share = Money.subtract(amount, remainder)
+        other_users = Enum.reject(users, &(&1 == user))
+
+        # Distribute payer's share to payer
+        acc = Map.merge(acc, %{user => payer_share}, &map_merge_money_add/3)
+
+        # Distribute remainder among other users
+        other_users
+        |> Stream.zip(Money.divide(remainder, Enum.count(other_users)))
         |> Enum.into(%{})
         |> Map.merge(acc, &map_merge_money_add/3)
     end)
@@ -137,6 +152,7 @@ defmodule Abrechnomat.Billing do
   end
 
   def payment_to_ast(%{amount: amount, own_share: own_share, user: user}) do
-    {:all_but, {user.id, Money.multiply(amount, 1 - own_share)}}
+    # {:all_but, {excluded_user, amount, others_share}}
+    {:all_but, {user.id, amount, 1 - own_share}}
   end
 end
